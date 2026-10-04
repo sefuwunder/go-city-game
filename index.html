@@ -113,7 +113,9 @@
       .viewport { padding:3px; border-width:2px; }
       .film { inset:3px; }
     }
-    @media (prefers-reduced-motion:reduce) { .toast { transition:none; } }
+    @keyframes quake-jolt { 0%,100%{transform:translate(0,0)} 12%{transform:translate(-4px,2px)} 28%{transform:translate(4px,-2px)} 46%{transform:translate(-3px,-1px)} 64%{transform:translate(3px,2px)} 82%{transform:translate(-1px,1px)} }
+    .viewport.quake { animation:quake-jolt .7s steps(2,end); }
+    @media (prefers-reduced-motion:reduce) { .toast { transition:none; } .viewport.quake { animation:none; } }
   </style>
 </head>
 <body>
@@ -125,7 +127,7 @@
       <div class="faction"><div><span class="label">CPU · Mayor of Harbor</span><span class="score" id="score1">0</span></div><span class="stone harbor"></span></div>
     </div>
     <div class="viewport">
-      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A high-detail twenty by twenty isometric valley where two mayors build neighboring communities together through weather, water access, farms, markets, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
+      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A high-detail twenty by twenty isometric valley with steep physical hills, where two mayors build neighboring communities through weather, earthquakes, water access, boat cargo, farms, culture, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
       <div class="film"></div><div class="toast" id="toast"></div>
     </div>
     <p class="mobile-hint">Tap a glowing plot to settle it. The whole twenty-by-twenty valley fits.</p>
@@ -200,6 +202,8 @@
         <div class="life-item"><span>rural road links</span><b id="ruralRoads">0</b></div>
         <div class="life-item"><span>rail depots</span><b id="depots">0</b></div>
         <div class="life-item"><span>depot goods</span><b id="depotGoods">0</b></div>
+        <div class="life-item"><span>boat goods</span><b id="boatGoods">0</b></div>
+        <div class="life-item"><span>boat sailings</span><b id="boatRuns">0</b></div>
       </div>
     </section>
     <section class="panel life" aria-label="Rare town trades">
@@ -213,6 +217,19 @@
         <div class="life-item"><span>apothecaries</span><b id="apothecaries">0</b></div>
         <div class="life-item"><span>coaching inns</span><b id="inns">0</b></div>
         <div class="life-item"><span>playhouses</span><b id="playhouses">0</b></div>
+      </div>
+    </section>
+    <section class="panel life" aria-label="Culture, services, and seismic pressure">
+      <h3 class="life-title">Culture + resilience</h3>
+      <div class="life-grid">
+        <div class="life-item"><span>art studios</span><b id="artStudios">0</b></div>
+        <div class="life-item"><span>yoga studios</span><b id="yogaStudios">0</b></div>
+        <div class="life-item"><span>lawyers</span><b id="lawyers">0</b></div>
+        <div class="life-item"><span>botanicas</span><b id="botanicas">0</b></div>
+        <div class="life-item"><span>cultural impact</span><b id="cultureImpact">0</b></div>
+        <div class="life-item"><span>fault cycle</span><b id="quakeClock">3 wk</b></div>
+        <div class="life-item"><span>quake penalty</span><b id="quakePenalty">0</b></div>
+        <div class="life-item"><span>districts hit</span><b id="quakeHits">0</b></div>
       </div>
     </section>
     <section class="panel" aria-label="Mayors' imperfect signals">
@@ -238,16 +255,17 @@
       <div class="rulebook" id="rules">
         <strong>Two mayors, one valley.</strong> You lead Hearth; the CPU leads Harbor. Both mayors try to turn effort into a thriving shared valley, but neither can see the other’s plan—only each new settlement and an imperfect public signal. Your effort scores combine above the board. Isolated districts still return to meadow, and every settlement needs breathing room.<br><br>
         <strong>Grow like a city—without rushing it.</strong> Every six turns the season changes. Hearth raises warm Italianate streets; Harbor builds cool Moroccan courtyards. Connected neighbors lay roads automatically. Individual houses and otherwise-alone neighboring pairs become farm homesteads; chains of same-community houses within two plots slowly join by rural roads after a season. But packing three or more newly settled houses directly together inside six turns creates a strained cluster: wellbeing drops sharply, growth pauses, and that mayor’s effort score takes a heavy temporary penalty. Extra houses and tighter blocks deepen the penalty until the early building rush ages out. Harbor understands this rule and will usually spread or pace its construction.<br><br>
-        <strong>Follow the water.</strong> Wetlands and neighboring plots provide attractive water access, lifting wellbeing and growth. Spring rain can flood low ground; flooded farms produce less. Summer drought stresses dry inland land, while waterside settlements stay resilient. Blue cisterns mark settled plots with access.<br><br>
+        <strong>Follow the water.</strong> Wetlands and neighboring plots provide attractive water access, lifting wellbeing and growth. Spring rain can flood low ground; flooded farms produce less. Summer drought stresses dry inland land, while waterside settlements stay resilient. Blue cisterns mark settled plots with access. When two settled water plots share an unbroken wetland channel, cargo boats begin sailing between them; each weekly sailing moves six crates and gives the connected waterfront a wellbeing lift.<br><br>
         <strong>Complete the food chain.</strong> Settled fields and pastures harvest food each week. Farms route it through connected commerce: rural farming communes open farmers markets, while village centers and plazas with shops form marketing agencies that raise demand. Harvest becomes stock, then food moved through shops, markets, and deliveries.<br><br>
         <strong>Trade close to home.</strong> Shops serve people in their connected community. Walk-ins buy locally, while 35% of bicyclists become cycle couriers and carry up to four orders each. Farmers markets add rural trade; marketing agencies strengthen population-center commerce.<br><br>
         <strong>The weekly goods train.</strong> Every six turns mark a week. The freight train circles the whole valley and delivers two crates to every settled plot, no matter which community lives there. Trackside houses mature into depots after a season; when the train passes, each depot sends bonus goods through its connected rural-road community. Fresh rail service lifts wellbeing across the entire area for the new week; watch the timetable beside the year.<br><br>
         <strong>Wellbeing shapes growth.</strong> Quality of life rises with green land, roads, nearby shops, civic care, lively places, good weather, and manageable density. Healthy tiles gain more citizens; tiles above 58% mature each season, and tiles above 82% can grow twice. Struggling tiles pause their architectural growth. Flowering gardens mark thriving plots.<br><br>
-        <strong>Care and culture emerge.</strong> Growing connected communities establish <strong>spiritual places</strong> first, then leafy <strong>parks</strong>, <strong>libraries</strong>, and finally <strong>hospitals</strong>. Each serves its whole connected road network and lifts quality of life. Italianate Hearth and Moroccan Harbor give every civic building its own architectural character.<br><br>
+        <strong>Care and culture emerge.</strong> Growing connected communities establish <strong>spiritual places</strong> first, then leafy <strong>parks</strong>, <strong>libraries</strong>, and finally <strong>hospitals</strong>. Mature neighborhoods can also open <strong>art studios</strong>, <strong>yoga studios</strong>, <strong>law offices</strong>, and <strong>botanicas</strong>. Along with libraries, parks, spiritual places, plazas, and playhouses, they generate cultural impact that adds directly to each mayor’s effort score. Italianate Hearth and Moroccan Harbor give every civic building its own architectural character.<br><br>
+        <strong>The fault remembers density.</strong> Every third week, the valley’s fault shifts. The most tightly knit district of four or more directly connected plots is struck; extra internal street links deepen the damage. Its affected plots carry a massive temporary effort penalty for the following week, marked by cracked ground and rubble. Looser settlements escape the main shock.<br><br>
         <strong>Rare trades find their niche.</strong> Mature working land can attract <strong>grain mills</strong>, <strong>bakeries</strong>, <strong>smithies</strong>, and <strong>apothecaries</strong>. Larger centers may open <strong>coaching inns</strong> and <strong>playhouses</strong>; waterside communities develop <strong>fisheries</strong> and <strong>ferry houses</strong>. No two districts receive the same mix automatically—the land, age, population, and local connections all matter.<br><br>
         <strong>Build with the water.</strong> Wetland plots do not receive ordinary masonry. Hearth uses bright, buoyant timber houses inspired by the floating villages of Tonle Sap Lake; Harbor raises timber homes and verandahs on tall stilts, with pitched roofs and boardwalks inspired by Kampong Ayer.<br><br>
         <strong>Places emerge.</strong> Mature, small hillside clusters become <strong>villas</strong>. Five connected homes make a <strong>village center</strong>. Four or more homes become a <strong>farming commune</strong> when at least half sit on fields or pasture. A dense neighborhood of nine or more forms a paved <strong>plaza</strong>. Growth can change a place again as its shape and land use evolve.<br><br>
-        <strong>Read the land.</strong> The twenty-by-twenty field holds 400 plots. Every new game raises fresh hills and hollows, then rerolls meadow, field, pasture, grove, wetland, and ridge. Working land gives a little extra seasonal growth. Empty regions held by one community score as territory.<br><br>
+        <strong>Read the land.</strong> The twenty-by-twenty field holds 400 plots. Every new game raises fresh, steep-sided hills and deep hollows, then rerolls meadow, field, pasture, grove, wetland, and ridge. Working land gives a little extra seasonal growth. Empty regions held by one community score as territory.<br><br>
         Mouse, touch, or <span class="key">arrow keys</span> + <span class="key">Enter</span> all work.
       </div>
     </section>
@@ -267,15 +285,17 @@
     {name:'Autumn', weather:'Harvest wind', growth:1, sky:['#876f72','#d9a065'], ground:'#9b8746', edge:'#5e5035', accent:'#d9673e'},
     {name:'Winter', weather:'First snow', growth:0, sky:['#667986','#c7d0ce'], ground:'#b6c2b3', edge:'#697a73', accent:'#e9f0e8'}
   ];
-  var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainGoodsByPlayer, depotGoods, trainRuns, lastTrainMove, trainStartedAt, climate, foodStocks, foodHarvest, foodSales, humanSignal, cpuSignal, cpuThinking=false, cpuTimer=null, worldAngle=0;
+  var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainGoodsByPlayer, depotGoods, trainRuns, lastTrainMove, trainStartedAt, boatGoods, boatGoodsByPlayer, boatRuns, lastBoatMove, climate, earthquake, foodStocks, foodHarvest, foodSales, humanSignal, cpuSignal, cpuThinking=false, cpuTimer=null, worldAngle=0;
   var audioCtx=null,masterGain=null,musicGain=null,fxGain=null,audioStarted=false,audioEnabled=true,musicEnabled=true,weatherNodes=[],musicTimer=null,musicStep=0,musicNext=0,stormTimer=null;
   var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reviewMode=location.search.indexOf('architecture-review=1')!==-1, reviewArt={};
   function setupArchitectureReview(){
-    var types=['house','villa','farmstead','depot','market','agency','center','plaza','commune','spiritual','library','hospital','fishery','ferry','mill','bakery','smithy','apothecary','inn','playhouse'];
-    var hearth=[],harbor=[];[2,6,10,14].forEach(function(y){[1,3,5,7,9].forEach(function(x){hearth.push([x,y]);});[10,12,14,16,18].forEach(function(x){harbor.push([x,y]);});});
+    var types=['house','villa','farmstead','depot','market','agency','center','plaza','commune','spiritual','library','hospital','fishery','ferry','mill','bakery','smithy','apothecary','inn','playhouse','art','yoga','lawyer','botanica','park'];
+    var hearth=[],harbor=[];[2,6,10,14,18].forEach(function(y){[1,3,5,7,9].forEach(function(x){hearth.push([x,y]);});[10,12,14,16,18].forEach(function(x){harbor.push([x,y]);});});
     [hearth,harbor].forEach(function(points,player){points.forEach(function(c,i){board[c[1]][c[0]]={player:player,age:6,pop:18,bornWeek:-2,bornMove:-99,seed:i+player*23};reviewArt[c[0]+','+c[1]]=types[i];elevation[c[1]][c[0]]=0;terrain[c[1]][c[0]]=i===12||i===13?'wetland':i===2||i===8||i===14||i===15?'field':i===16?'ridge':i===17?'grove':i===4?'pasture':'meadow';});});
-    moves=24;seasonIndex=1;year=3;trainRuns=2;climate={flooded:{},drought:{},floodCount:0,droughtCount:0};
+    for(var wx=6;wx<=15;wx++){terrain[10][wx]='wetland';elevation[10][wx]=-1;}
+    moves=24;seasonIndex=1;year=3;trainRuns=3;boatGoods=24;boatRuns=4;lastBoatMove=moves;climate={flooded:{},drought:{},floodCount:0,droughtCount:0};
+    earthquake={cells:{'1,2':1,'3,2':1,'5,2':1,'7,2':1,'9,2':1},damageByPlayer:[189,0],hits:5,active:true,epicenter:[5,2],connections:7};
   }
   function updateAudioUI(){
     var sound=document.getElementById('soundToggle'),music=document.getElementById('musicToggle'),status=document.getElementById('audioStatus');
@@ -372,6 +392,23 @@
     if(terrain[y][x]==='wetland')return true;
     return neighbors(x,y).some(function(n){return terrain[n[1]][n[0]]==='wetland';});
   }
+  function waterPath(start,goal,allowed){
+    var queue=[start],seen={},previous={},startKey=start[0]+','+start[1],goalKey=goal[0]+','+goal[1];seen[startKey]=1;
+    while(queue.length){var c=queue.shift(),key=c[0]+','+c[1];if(key===goalKey)break;neighbors(c[0],c[1]).forEach(function(n){var nk=n[0]+','+n[1];if(!seen[nk]&&allowed[nk]){seen[nk]=1;previous[nk]=key;queue.push(n);}});}
+    if(!seen[goalKey])return [];
+    var path=[],walk=goalKey;while(walk){var parts=walk.split(',');path.unshift([+parts[0],+parts[1]]);if(walk===startKey)break;walk=previous[walk];}return path;
+  }
+  function waterTradeData(){
+    var visited={},routes=[],ports=0,networks=0;
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var first=x+','+y;if(visited[first]||terrain[y][x]!=='wetland')continue;
+      var queue=[[x,y]],allowed={},componentPorts=[];visited[first]=1;
+      while(queue.length){var c=queue.shift(),key=c[0]+','+c[1];allowed[key]=1;if(board[c[1]][c[0]])componentPorts.push(c);neighbors(c[0],c[1]).forEach(function(n){var nk=n[0]+','+n[1];if(!visited[nk]&&terrain[n[1]][n[0]]==='wetland'){visited[nk]=1;queue.push(n);}});}
+      if(componentPorts.length<2)continue;networks++;ports+=componentPorts.length;componentPorts.sort(function(a,b){return a[1]-b[1]||a[0]-b[0];});
+      for(var p=1;p<componentPorts.length;p++){var path=waterPath(componentPorts[p-1],componentPorts[p],allowed);if(path.length>1)routes.push({path:path,from:componentPorts[p-1],to:componentPorts[p],player:board[componentPorts[p-1][1]][componentPorts[p-1][0]].player});}
+    }
+    return {routes:routes,ports:ports,networks:networks};
+  }
   function refreshClimate(){
     climate={flooded:{},drought:{},floodCount:0,droughtCount:0};
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){
@@ -393,7 +430,8 @@
     valleySeed=Math.floor(Math.random()*900000)+100000; terrain=makeTerrain();
     board=[]; for(var y=0;y<N;y++){ var row=[]; for(var x=0;x<N;x++) row.push(null); board.push(row); }
     turn=0; moves=0; seasonIndex=0; year=1; captures=[0,0]; log=[]; cursor={x:Math.floor(N/2),y:Math.floor(N/2)}; particles=[]; tick=0; lastTime=performance.now();
-    trainGoods=0; trainGoodsByPlayer=[0,0]; depotGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;foodStocks={};foodHarvest=0;foodSales=0;
+    trainGoods=0; trainGoodsByPlayer=[0,0]; depotGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;boatGoods=0;boatGoodsByPlayer=[0,0];boatRuns=0;lastBoatMove=-99;foodStocks={};foodHarvest=0;foodSales=0;
+    earthquake={cells:{},damageByPlayer:[0,0],hits:0,active:false,epicenter:null,connections:0};
     humanSignal='You can place, but Harbor only sees the result.';cpuSignal='The other mayor studies the valley in silence.';refreshClimate();
     if(audioStarted&&audioEnabled)startWeather();
     if(reviewMode)setupArchitectureReview();
@@ -457,6 +495,23 @@
     var seen={},stack=[[x,y]],count=0;while(stack.length){var c=stack.pop(),k=c[0]+','+c[1];if(seen[k]||!urban.map[k])continue;seen[k]=1;count++;neighbors(c[0],c[1]).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===v.player&&urban.map[n[0]+','+n[1]])stack.push(n);});}
     return {count:count,intensity:urban.map[key],penalty:urban.byPlayer[v.player]};
   }
+  function resolveEarthquake(){
+    earthquake={cells:{},damageByPlayer:[0,0],hits:0,active:false,epicenter:null,connections:0};
+    if(trainRuns%3!==0)return earthquake;
+    var seen={},candidates=[];
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var key=x+','+y,v=board[y][x];if(!v||seen[key])continue;
+      var g=groupAt(x,y),edges=0,center=null,centerLinks=-1;
+      g.cells.forEach(function(c){seen[c[0]+','+c[1]]=1;var links=0;neighbors(c[0],c[1]).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===v.player){links++;if(n[0]>c[0]||(n[0]===c[0]&&n[1]>c[1]))edges++;}});if(links>centerLinks){centerLinks=links;center=c;}});
+      if(g.cells.length>=4&&edges>=g.cells.length)candidates.push({cells:g.cells,player:v.player,edges:edges,center:center,density:edges/g.cells.length});
+    }
+    if(!candidates.length)return earthquake;
+    candidates.sort(function(a,b){return (b.density*100+b.cells.length*4+b.edges)-(a.density*100+a.cells.length*4+a.edges);});
+    var hit=candidates[0],loops=Math.max(1,hit.edges-hit.cells.length+1),penalty=hit.cells.length*35+loops*14;
+    hit.cells.forEach(function(c){earthquake.cells[c[0]+','+c[1]]=1;});earthquake.damageByPlayer[hit.player]=penalty;earthquake.hits=hit.cells.length;earthquake.active=true;earthquake.epicenter=hit.center;earthquake.connections=hit.edges;
+    var viewport=document.querySelector('.viewport');viewport.classList.remove('quake');void viewport.offsetWidth;viewport.classList.add('quake');setTimeout(function(){viewport.classList.remove('quake');},850);
+    return earthquake;
+  }
   function cloneBoard(){ return board.map(function(r){return r.map(function(v){return v?Object.assign({},v):null;});}); }
   function makeMove(x,y,p){
     if(x<0||y<0||x>=N||y>=N||board[y][x])return {ok:false,reason:'occupied'};
@@ -507,9 +562,12 @@
     startAudio();if(turn!==0||cpuThinking)return;humanSignal='Hearth conserves effort; Harbor can only guess why.'; addLog('Hearth watched the weather and conserved effort.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
   }
   function advanceIfNeeded(){ if(moves>0&&moves%6===0){
-    var freight=runTrainDelivery();
+    var freight=runTrainDelivery(),waterFreight=runBoatDelivery();
     seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}refreshClimate();if(audioStarted&&audioEnabled)startWeather();
-    var report=grow(); addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
+    var quake=resolveEarthquake(),report=grow(); addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
+    if(waterFreight.sailings)addLog(waterFreight.sailings+' cargo boat'+(waterFreight.sailings===1?' sailed':'s sailed')+' the wetland channels with '+waterFreight.crates+' crates.');
+    if(quake.active){var struck=quake.damageByPlayer[0]?name(0):name(1),loss=quake.damageByPlayer[0]+quake.damageByPlayer[1];addLog('EARTHQUAKE: the fault struck '+struck+'’s tightest district—'+quake.hits+' plots carry −'+loss+' effort this week.');}
+    else if(trainRuns%3===0)addLog('The fault shifted, but no tightly knit district met the shock.');
     if(freight.bonus)addLog(freight.depots+' trackside depot'+(freight.depots===1?'':'s')+' routed '+freight.bonus+' bonus goods through rural communities.');
     addLog(seasons[seasonIndex].name+' arrived: '+seasons[seasonIndex].weather.toLowerCase()+'.');
     if(climate.floodCount)addLog(climate.floodCount+' low plots flooded after the spring rain.');
@@ -517,6 +575,7 @@
     if(report.food.harvest)addLog('Food chain: farms harvested '+report.food.harvest+'; commerce moved '+report.food.sold+' into the valley.');
     if(report.trade) addLog(report.deliveries+' cycle deliveries helped '+report.trade+' local trades change hands.');
     if(report.opened.length) addLog('The communities opened '+report.opened.join(', ')+'.');
+    if(report.cultureOpened.length) addLog('Culture grew through '+report.cultureOpened.join(', ')+'.');
     if(report.rareOpened.length) addLog('New local institutions: '+report.rareOpened.join(', ')+'.');
     if(report.urban.total)addLog(report.urban.clusters+' rushed housing cluster'+(report.urban.clusters===1?' is':'s are')+' carrying −'+report.urban.total+' effort; their architectural growth paused.');
     addLog('Shared wellbeing is '+report.average+'%; '+report.matured+' tile'+(report.matured===1?'':'s')+' grew.');
@@ -528,6 +587,12 @@
     var bonus=bonusByPlayer[0]+bonusByPlayer[1],crates=stops*2+bonus;
     trainGoods+=crates;depotGoods+=bonus;trainGoodsByPlayer[0]+=baseByPlayer[0]+bonusByPlayer[0];trainGoodsByPlayer[1]+=baseByPlayer[1]+bonusByPlayer[1];trainRuns++;lastTrainMove=moves;trainStartedAt=performance.now();
     return {crates:crates,stops:stops,bonus:bonus,depots:depots,byPlayer:[baseByPlayer[0]+bonusByPlayer[0],baseByPlayer[1]+bonusByPlayer[1]]};
+  }
+  function runBoatDelivery(){
+    var water=waterTradeData(),crates=water.routes.length*6,byPlayer=[0,0];
+    water.routes.forEach(function(route){var a=board[route.from[1]][route.from[0]],b=board[route.to[1]][route.to[0]];if(a)byPlayer[a.player]+=3;if(b)byPlayer[b.player]+=3;});
+    boatGoods+=crates;boatGoodsByPlayer[0]+=byPlayer[0];boatGoodsByPlayer[1]+=byPlayer[1];boatRuns+=water.routes.length;if(water.routes.length)lastBoatMove=moves;
+    return {crates:crates,sailings:water.routes.length,byPlayer:byPlayer};
   }
   function grow(){
     var pulse=communityData(), seen={}, matured=0;
@@ -544,8 +609,9 @@
     var after=communityData(),opened=[],rareOpened=[];
     [['hospitals','hospital','hospitals'],['spiritual','spiritual place','spiritual places'],['libraries','library','libraries'],['parks','park','parks']].forEach(function(pair){var gained=after.civic.counts[pair[0]]-pulse.civic.counts[pair[0]];if(gained>0)opened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
     [['fishery','fishery','fisheries'],['ferry','ferry house','ferry houses'],['mill','grain mill','grain mills'],['bakery','bakery','bakeries'],['smithy','smithy','smithies'],['apothecary','apothecary','apothecaries'],['inn','coaching inn','coaching inns'],['playhouse','playhouse','playhouses']].forEach(function(pair){var gained=after.rare.counts[pair[0]]-pulse.rare.counts[pair[0]];if(gained>0)rareOpened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
+    var cultureOpened=[];[['art','art studio','art studios'],['yoga','yoga studio','yoga studios'],['lawyer','law office','law offices'],['botanica','botanica','botanicas']].forEach(function(pair){var gained=after.neighborhood.counts[pair[0]]-pulse.neighborhood.counts[pair[0]];if(gained>0)cultureOpened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
     var food=runFoodCycle(after);
-    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened,rareOpened:rareOpened,food:food,urban:after.urban};
+    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened,rareOpened:rareOpened,cultureOpened:cultureOpened,food:food,urban:after.urban};
   }
   function runFoodCycle(data){
     var harvest=0,sold=0,nextStocks={};
@@ -651,39 +717,62 @@
     }
     return {map:map,counts:counts,total:Object.keys(map).length};
   }
+  function neighborhoodBusinessData(places,civic,food,rare){
+    var seen={},map={},counts={art:0,yoga:0,lawyer:0,botanica:0},byPlayer=[0,0],values={art:12,yoga:7,lawyer:4,botanica:10};
+    function open(cells,type,scoreFn){
+      var best=null,bestScore=-Infinity;
+      cells.forEach(function(c){var key=c[0]+','+c[1],v=board[c[1]][c[0]],place=places.map[key];if(map[key]||civic.map[key]||food.map[key]||rare.map[key]||terrain[c[1]][c[0]]==='wetland'||isDepot(c[0],c[1])||(place&&place.lead)||v.age<2)return;var score=scoreFn(c,v);if(score>bestScore){bestScore=score;best=c;}});
+      if(best){var key=best[0]+','+best[1],player=board[best[1]][best[0]].player;map[key]=type;counts[type]++;byPlayer[player]+=values[type];return true;}return false;
+    }
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var key=x+','+y,v=board[y][x];if(!v||seen[key])continue;
+      var g=groupAt(x,y),totalAge=0,totalPop=0,groves=[],quiet=[],centers=[],all=[],hasSpirit=false,hasPark=false;
+      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],place=places.map[cx+','+cy],service=civic.map[cx+','+cy];seen[cx+','+cy]=1;totalAge+=cell.age;totalPop+=cell.pop;all.push(c);if(land==='grove'||land==='ridge')groves.push(c);if(land==='grove'||land==='meadow'||land==='wetland'||waterAccessAt(cx,cy))quiet.push(c);if(place&&(place.type==='center'||place.type==='plaza'))centers.push(c);if(service==='spiritual')hasSpirit=true;if(service==='park')hasPark=true;});
+      if(g.cells.length>=4&&totalAge>=5)open(groves.concat(all),'art',function(c,b){var land=terrain[c[1]][c[0]];return (land==='grove'?20:land==='ridge'?14:0)+b.age*4+b.pop+rng(valleySeed+c[0]*71+c[1]*31)*7;});
+      if(g.cells.length>=4&&totalAge>=7&&totalPop>=18&&(hasPark||quiet.length))open(quiet.concat(all),'yoga',function(c,b){return (waterAccessAt(c[0],c[1])?18:0)+(terrain[c[1]][c[0]]==='grove'?12:0)+b.age*3-b.pop*.2;});
+      if(g.cells.length>=6&&totalAge>=9&&totalPop>=34&&centers.length)open(centers.concat(all),'lawyer',function(c,b){var p=places.map[c[0]+','+c[1]];return (p&&(p.type==='center'||p.type==='plaza')?22:0)+b.pop*1.5+b.age*3;});
+      if(g.cells.length>=5&&totalAge>=8&&hasSpirit)open(groves.concat(quiet).concat(all),'botanica',function(c,b){return (terrain[c[1]][c[0]]==='grove'?22:0)+(waterAccessAt(c[0],c[1])?10:0)+b.age*4+rng(valleySeed+c[0]*23+c[1]*83)*8;});
+    }
+    Object.keys(civic.map).forEach(function(key){var c=key.split(',').map(Number),player=board[c[1]][c[0]].player,type=civic.map[key],value=type==='library'?8:type==='spiritual'?6:type==='park'?5:0;byPlayer[player]+=value;});
+    Object.keys(rare.map).forEach(function(key){if(rare.map[key]!=='playhouse')return;var c=key.split(',').map(Number);byPlayer[board[c[1]][c[0]].player]+=14;});
+    Object.keys(places.map).forEach(function(key){var place=places.map[key];if(!place.lead||place.type!=='plaza')return;var c=key.split(',').map(Number);byPlayer[board[c[1]][c[0]].player]+=4;});
+    if(reviewMode){Object.keys(reviewArt).forEach(function(key){var type=reviewArt[key];if(type!=='art'&&type!=='yoga'&&type!=='lawyer'&&type!=='botanica')return;var c=key.split(',').map(Number),player=board[c[1]][c[0]].player;map[key]=type;counts[type]++;byPlayer[player]+=values[type];});}
+    return {map:map,counts:counts,byPlayer:byPlayer,impact:byPlayer[0]+byPlayer[1]};
+  }
   function communityData(){
-    var seen={},tiles={},places=placeData(),civic=civicData(),food=foodNetworkData(places,civic),rare=rareBusinessData(places,civic,food),urban=urbanizationData(),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0},wellTotal=0,occupied=0,thriving=0,waterCount=0,weatherStress=0,railLift=moves-lastTrainMove<6?5:0;
+    var seen={},tiles={},places=placeData(),civic=civicData(),food=foodNetworkData(places,civic),rare=rareBusinessData(places,civic,food),neighborhood=neighborhoodBusinessData(places,civic,food,rare),urban=urbanizationData(),waterTrade=waterTradeData(),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0,waterTrade:waterTrade.routes.length*6},wellTotal=0,occupied=0,thriving=0,waterCount=0,weatherStress=0,railLift=moves-lastTrainMove<6?5:0,boatLift=moves-lastBoatMove<6?4:0;
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){
       var key=x+','+y,v=board[y][x]; if(!v||seen[key])continue;
-      var g=groupAt(x,y),shops=0,people=0,connections=0,groupFarms=0,groupMarkets=0,groupAgencies=0,rareTrades=0,services={hospital:0,spiritual:0,library:0,park:0};
-      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],service=civic.map[cx+','+cy],foodSite=food.map[cx+','+cy],rareSite=rare.map[cx+','+cy];seen[cx+','+cy]=1;people+=cell.pop;if(isShop(cell)&&!service)shops++;if(service)services[service]++;if(rareSite)rareTrades++;if(!service&&(terrain[cy][cx]==='field'||terrain[cy][cx]==='pasture'))groupFarms++;if(foodSite==='market')groupMarkets++;if(foodSite==='agency')groupAgencies++;
+      var g=groupAt(x,y),shops=0,people=0,connections=0,groupFarms=0,groupMarkets=0,groupAgencies=0,rareTrades=0,cultureSites=0,services={hospital:0,spiritual:0,library:0,park:0};
+      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],service=civic.map[cx+','+cy],foodSite=food.map[cx+','+cy],rareSite=rare.map[cx+','+cy],neighborhoodSite=neighborhood.map[cx+','+cy];seen[cx+','+cy]=1;people+=cell.pop;if(isShop(cell)&&!service&&!neighborhoodSite)shops++;if(service)services[service]++;if(rareSite)rareTrades++;if(neighborhoodSite)cultureSites++;if(!service&&(terrain[cy][cx]==='field'||terrain[cy][cx]==='pasture'))groupFarms++;if(foodSite==='market')groupMarkets++;if(foodSite==='agency')groupAgencies++;
         if(cx+1<N&&board[cy][cx+1]&&board[cy][cx+1].player===cell.player)connections++;
         if(cy+1<N&&board[cy+1][cx]&&board[cy+1][cx].player===cell.player)connections++;
       });
       var cyclists=Math.ceil(connections/2),drivers=cyclists?Math.max(1,Math.round(cyclists*.35)):0,walkins=Math.min(people,shops*3+groupMarkets*4),deliveries=shops?Math.min(Math.max(0,people-walkins),drivers*4+groupAgencies*3):0;
-      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8,foodLift=(groupFarms&&shops?5:0)+groupMarkets*5+groupAgencies*4,rareLift=Math.min(10,rareTrades*3);
+      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8,foodLift=(groupFarms&&shops?5:0)+groupMarkets*5+groupAgencies*4,rareLift=Math.min(10,rareTrades*3),cultureLift=Math.min(12,cultureSites*4);
       economy.shops+=shops;economy.bicyclists+=cyclists;economy.drivers+=drivers;economy.walkins+=walkins;economy.deliveries+=deliveries;economy.trade+=walkins+deliveries+rareTrades*2;
       g.cells.forEach(function(c){
         var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],friends=0,place=places.map[cx+','+cy],service=civic.map[cx+','+cy],seasonLift=[6,2,3,-4][seasonIndex],water=waterAccessAt(cx,cy),hazard=hazardAt(cx,cy);
         neighbors(cx,cy).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===cell.player)friends++;});
-        var green={meadow:9,field:5,pasture:7,grove:13,wetland:7,ridge:6}[land],placeLift=place?(place.type==='plaza'?14:place.type==='center'?10:place.type==='commune'?8:12):0,urbanStrain=urban.map[cx+','+cy]||0;
-        var access=shops>0,score=42+seasonLift+green+railLift+(water?13:0)+foodLift+rareLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-(hazard==='flood'?15:hazard==='drought'?18:0)-urbanStrain-Math.max(0,cell.pop-18);
+        var green={meadow:9,field:5,pasture:7,grove:13,wetland:7,ridge:6}[land],placeLift=place?(place.type==='plaza'?14:place.type==='center'?10:place.type==='commune'?8:12):0,urbanStrain=urban.map[cx+','+cy]||0,waterfrontLift=land==='wetland'&&boatLift?boatLift:0;
+        var access=shops>0,score=42+seasonLift+green+railLift+waterfrontLift+(water?13:0)+foodLift+rareLift+cultureLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-(hazard==='flood'?15:hazard==='drought'?18:0)-urbanStrain-Math.max(0,cell.pop-18);
         score=Math.max(8,Math.min(98,Math.round(score)));tiles[cx+','+cy]={score:score,tradeAccess:access,driverAccess:drivers>0,service:service,water:water,hazard:hazard,urbanStrain:urbanStrain};wellTotal+=score;occupied++;if(water)waterCount++;if(hazard)weatherStress++;if(score>=72)thriving++;
       });
     }
-    return {tiles:tiles,places:places,civic:civic,food:food,rare:rare,urban:urban,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving,waterCount:waterCount,weatherStress:weatherStress};
+    economy.trade+=economy.waterTrade;
+    return {tiles:tiles,places:places,civic:civic,food:food,rare:rare,neighborhood:neighborhood,urban:urban,waterTrade:waterTrade,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving,waterCount:waterCount,weatherStress:weatherStress};
   }
   function stats(){
     var stones=[0,0],pop=[0,0],effort=[0,0],depots=0,life={businesses:0,farmers:0,bicyclists:0,herders:0},community=communityData(),roadLinks=ruralRoadLinks();
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){var v=board[y][x];if(v){
       var homestead=isIsolatedHouse(x,y),depot=isDepot(x,y);stones[v.player]++;pop[v.player]+=v.pop;effort[v.player]+=v.pop+v.age*2+(waterAccessAt(x,y)?3:0)+(homestead?2:0)+(depot?3:0)+(community.tiles[x+','+y]&&community.tiles[x+','+y].score>=72?2:0);if(depot)depots++;
-      if(isShop(v)&&!community.civic.map[x+','+y])life.businesses++;
+      if(isShop(v)&&!community.civic.map[x+','+y]&&!community.neighborhood.map[x+','+y])life.businesses++;
       if(terrain[y][x]==='field')life.farmers+=1+Math.floor(v.age/2);
       if(terrain[y][x]==='pasture')life.herders+=1+Math.floor(v.age/3);
     }}
     var terr=territoryData();life.bicyclists=community.economy.bicyclists;
-    var score=[Math.max(0,effort[0]+terr.count[0]+captures[0]-community.urban.byPlayer[0]),Math.max(0,effort[1]+terr.count[1]+captures[1]-community.urban.byPlayer[1])];
-    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,food:community.food,rare:community.rare,urban:community.urban,economy:community.economy,wellness:community.average,thriving:community.thriving,waterCount:community.waterCount,weatherStress:community.weatherStress,railGoods:trainGoods,railGoodsByPlayer:trainGoodsByPlayer,depotGoods:depotGoods,depots:depots,ruralRoads:roadLinks.length,trainRuns:trainRuns,score:score,sharedEffort:score[0]+score[1]};
+    var score=[Math.max(0,effort[0]+terr.count[0]+captures[0]+community.neighborhood.byPlayer[0]-community.urban.byPlayer[0]-earthquake.damageByPlayer[0]),Math.max(0,effort[1]+terr.count[1]+captures[1]+community.neighborhood.byPlayer[1]-community.urban.byPlayer[1]-earthquake.damageByPlayer[1])];
+    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,food:community.food,rare:community.rare,neighborhood:community.neighborhood,urban:community.urban,earthquake:earthquake,economy:community.economy,waterTrade:community.waterTrade,wellness:community.average,thriving:community.thriving,waterCount:community.waterCount,weatherStress:community.weatherStress,railGoods:trainGoods,railGoodsByPlayer:trainGoodsByPlayer,depotGoods:depotGoods,depots:depots,ruralRoads:roadLinks.length,trainRuns:trainRuns,boatGoods:boatGoods,boatRuns:boatRuns,score:score,sharedEffort:score[0]+score[1]};
   }
   function updateUI(){
     var s=stats(), sea=seasons[seasonIndex]; document.getElementById('score0').textContent=s.score[0];document.getElementById('score1').textContent=s.score[1];document.getElementById('sharedEffort').textContent=s.sharedEffort;
@@ -698,8 +787,9 @@
     document.getElementById('railGoods').textContent=s.railGoods;document.getElementById('trainRuns').textContent=s.trainRuns;
     document.getElementById('wellness').textContent=s.stones[0]+s.stones[1]?s.wellness+'%':'—';document.getElementById('thriving').textContent=s.thriving;document.getElementById('urbanPenalty').textContent=s.urban.total?'−'+s.urban.total:'0';document.getElementById('urbanClusters').textContent=s.urban.clusters;
     document.getElementById('waterAccess').textContent=s.waterCount;document.getElementById('weatherStress').textContent=s.weatherStress;document.getElementById('harvest').textContent=foodHarvest;document.getElementById('foodSales').textContent=foodSales;document.getElementById('farmersMarkets').textContent=s.food.markets;document.getElementById('agencies').textContent=s.food.agencies;
-    document.getElementById('homesteads').textContent=s.food.homesteads;document.getElementById('ruralRoads').textContent=s.ruralRoads;document.getElementById('depots').textContent=s.depots;document.getElementById('depotGoods').textContent=s.depotGoods;
+    document.getElementById('homesteads').textContent=s.food.homesteads;document.getElementById('ruralRoads').textContent=s.ruralRoads;document.getElementById('depots').textContent=s.depots;document.getElementById('depotGoods').textContent=s.depotGoods;document.getElementById('boatGoods').textContent=s.boatGoods;document.getElementById('boatRuns').textContent=s.boatRuns;
     document.getElementById('fisheries').textContent=s.rare.counts.fishery;document.getElementById('ferries').textContent=s.rare.counts.ferry;document.getElementById('mills').textContent=s.rare.counts.mill;document.getElementById('bakeries').textContent=s.rare.counts.bakery;document.getElementById('smithies').textContent=s.rare.counts.smithy;document.getElementById('apothecaries').textContent=s.rare.counts.apothecary;document.getElementById('inns').textContent=s.rare.counts.inn;document.getElementById('playhouses').textContent=s.rare.counts.playhouse;
+    document.getElementById('artStudios').textContent=s.neighborhood.counts.art;document.getElementById('yogaStudios').textContent=s.neighborhood.counts.yoga;document.getElementById('lawyers').textContent=s.neighborhood.counts.lawyer;document.getElementById('botanicas').textContent=s.neighborhood.counts.botanica;document.getElementById('cultureImpact').textContent='+'+s.neighborhood.impact;document.getElementById('quakeClock').textContent=(3-(s.trainRuns%3))+' wk';document.getElementById('quakePenalty').textContent=s.earthquake.damageByPlayer[0]+s.earthquake.damageByPlayer[1]?'−'+(s.earthquake.damageByPlayer[0]+s.earthquake.damageByPlayer[1]):'0';document.getElementById('quakeHits').textContent=s.earthquake.hits;
     document.getElementById('humanSignal').textContent=humanSignal;document.getElementById('cpuSignal').textContent=cpuSignal;
     var tr=document.getElementById('seasonTrack');tr.innerHTML='';var phase=moves%6;for(var i=0;i<6;i++){var el=document.createElement('i');if(i<phase)el.className='on';tr.appendChild(el);}
     var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});updateAudioUI();
@@ -711,7 +801,7 @@
     var c=(N-1)/2,dx=x-c,dy=y-c,co=Math.cos(worldAngle),si=Math.sin(worldAngle),rx=c+dx*co-dy*si,ry=c+dx*si+dy*co;
     return {x:ORGX+(rx-ry)*TW/2,y:ORGY+(rx+ry)*TH/2};
   }
-  function isoPoint(x,y,z){var p=isoFlat(x,y);return {x:p.x,y:p.y-(z||0)*7};}
+  function isoPoint(x,y,z){var p=isoFlat(x,y);return {x:p.x,y:p.y-(z||0)*15};}
   function iso(x,y){var z=elevation&&elevation[Math.round(y)]?elevation[Math.round(y)][Math.round(x)]||0:0;return isoPoint(x,y,z);}
   function tileCorners(x,y,z){return [isoPoint(x-.5,y-.5,z),isoPoint(x+.5,y-.5,z),isoPoint(x+.5,y+.5,z),isoPoint(x-.5,y+.5,z)];}
   function poly(points,fill,stroke){ctx.beginPath();points.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
@@ -757,7 +847,7 @@
     poly(rim.map(function(p){return[p.x,p.y];}),sea.ground,'#263f3d');
     var tiles=[];for(var y=0;y<N;y++)for(var x=0;x<N;x++)tiles.push({x:x,y:y,p:iso(x,y)});
     tiles.sort(function(u,v){return u.p.y-v.p.y;});
-    tiles.forEach(function(t){var p=t.p,kind=terrain[t.y][t.x],z=elevation[t.y][t.x],depth=5+Math.max(0,z)*2,corners=tileCorners(t.x,t.y,z);
+    tiles.forEach(function(t){var p=t.p,kind=terrain[t.y][t.x],z=elevation[t.y][t.x],depth=7+Math.max(0,z)*5,corners=tileCorners(t.x,t.y,z);
       for(var e=0;e<4;e++){var ca=corners[e],cb=corners[(e+1)%4];poly([[ca.x,ca.y],[cb.x,cb.y],[cb.x,cb.y+depth],[ca.x,ca.y+depth]],e%2?sea.edge:'#445a4d');}
       poly(corners.map(function(q){return[q.x,q.y];}),terrainColor(kind,sea),'rgba(31,57,48,.38)');
       drawTerrainDetail(p.x,p.y,kind,t.x,t.y,sea);drawClimateTile(p.x,p.y,t.x,t.y);
@@ -905,6 +995,22 @@
     /* playhouse */
     isoShadow(x,y,40,19,22);isoMass(x,y,39,19,21,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#574137'});if(hearth){isoGableRoof(x,y,43,21,21,8,p.roof,p.roofLight,'#55342d');}else{isoCrenels(x,y,39,19,21,p);isoTrimBand(x,y,39,19,18,p.accent);}isoDoor(x,y,39,19,'right',.38,11,13,p.wood,p.trim);isoFacePanel(x,y,39,19,'left',.34,6,5,8,p.glass,p.trim);isoFacePanel(x,y,39,19,'left',.7,6,5,8,p.glass,p.trim);poly([[x-12,y-20],[x+13,y-26],[x+13,y-20],[x-12,y-14]],hearth?'#d85b43':'#31888a',p.trim);rect(x-7,y-20,15,2,p.trim);
   }
+  function drawNeighborhoodBusiness(x,y,type,v){
+    var p=buildingPalette(v.player),hearth=v.player===0;
+    if(type==='art'){
+      isoShadow(x,y,32,15,18);isoMass(x,y,31,15,17,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#554138'});if(hearth)isoGableRoof(x,y,35,18,17,8,p.roof,p.roofLight,'#58362e');else{isoCrenels(x,y,31,15,17,p);isoTrimBand(x,y,31,15,14,p.accent);}isoFacePanel(x,y,31,15,'left',.52,3,10,10,'#5b97a0',p.trim);isoDoor(x,y,31,15,'right',.3,5,9,p.wood,p.trim);
+      detailLine(x+15,y-3,x+20,y-18,'#594238',1.5);detailLine(x+25,y-3,x+20,y-18,'#594238',1.5);rect(x+16,y-18,9,10,hearth?'#db6a45':'#3c8e8b');rect(x+18,y-16,5,2,'#f2d47f');return;
+    }
+    if(type==='yoga'){
+      poly([[x,y-9],[x+22,y+1],[x,y+11],[x-22,y+1]],hearth?'#b7a473':'#b9b18b','#5e5748');isoMass(x,y,25,12,11,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#554138'});if(hearth)isoHipRoof(x,y,30,15,11,4,'#6b7f54','#8aa06c','#4d4c3b');else{isoTrimBand(x,y,25,12,9,p.accent);isoCrenels(x,y,25,12,11,p);}isoFacePanel(x,y,25,12,'left',.5,2,12,7,'#78a9a3',p.trim);isoDoor(x,y,25,12,'right',.34,5,8,p.wood,p.trim);rect(x-14,y+5,9,2,'#d16950');rect(x-3,y+7,9,2,'#4f8f87');rect(x+8,y+5,9,2,'#d5b85c');return;
+    }
+    if(type==='lawyer'){
+      isoShadow(x,y,29,14,25);isoMass(x,y,28,13,24,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#554138'});isoTrimBand(x,y,28,13,5,p.stone);if(hearth)isoHipRoof(x,y,31,15,24,5,p.roof,p.roofLight,'#58362e');else{isoCrenels(x,y,28,13,24,p);isoTrimBand(x,y,28,13,21,p.accent);}isoWindows(x,y,28,13,24,p,3,2);isoDoor(x,y,28,13,'right',.3,6,9,p.wood,p.trim);
+      detailLine(x+16,y-25,x+16,y-13,'#4f4236',1);detailLine(x+10,y-22,x+22,y-22,'#4f4236',1);detailLine(x+10,y-22,x+7,y-17,'#4f4236',1);detailLine(x+22,y-22,x+25,y-17,'#4f4236',1);poly([[x+3,y-17],[x+11,y-17],[x+7,y-14]],'#d5ba68','#4f4236');poly([[x+21,y-17],[x+29,y-17],[x+25,y-14]],'#d5ba68','#4f4236');return;
+    }
+    isoShadow(x,y,31,15,17);isoMass(x,y,30,14,16,{left:'#55704d',right:'#789261',top:'#9db47b',edge:'#3f5039'});if(hearth)isoHipRoof(x,y,33,17,16,6,'#3d714d','#5d9360','#354b39');else{isoCrenels(x,y,30,14,16,p);isoTrimBand(x,y,30,14,14,'#4f9867');}isoDoor(x,y,30,14,'right',.3,5,9,p.wood,p.trim);isoFacePanel(x,y,30,14,'left',.58,3,9,8,'#7ab29a','#e3d58f');
+    [-12,-6,6,12].forEach(function(dx,i){rect(x+dx,y+1,4,3,i%2?'#7b5135':'#a46c3f');rect(x+dx+1,y-2,2,4,i%2?'#6b9d50':'#4e824e');});rect(x+8,y-22,8,7,'#4c8658');isoCross(x+12,y-16,'#ead77f');
+  }
   function drawVilla(x,y,v){
     var p=buildingPalette(v.player),hearth=v.player===0,w=34,d=17,h=16;isoShadow(x,y,w,d,h);isoMass(x,y,w,d,h,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#5b4236'});
     if(hearth){isoHipRoof(x,y,w+4,d+3,h,7,p.roof,p.roofLight,'#57332c');isoTrimBand(x,y,w,d,h-2,p.trim);isoWindows(x,y,w,d,h,p,2,2);isoDoor(x,y,w,d,'right',.28,5,9,p.wood,p.trim);isoMass(x-11,y-9,8,4,23,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#5b4236'});isoHipRoof(x-11,y-9,10,5,23,4,p.roof,p.roofLight,'#57332c');
@@ -1016,6 +1122,12 @@
     var leaf=seasonIndex===3?'#d7e1d8':well.score>=82?'#3f8a51':'#6f9b4e', bloom=seasonIndex===3?'#f2f3e8':seed%2?'#f3c85f':'#e98165';
     [[-10,1],[9,3],[-7,5],[7,-1]].slice(0,well.score>=82?4:2).forEach(function(p,i){rect(x+p[0],y+p[1],2,3,leaf);rect(x+p[0]-1,y+p[1]-1,3,1,i%2?bloom:'#f4e4a0');});
   }
+  function drawEarthquakeDamage(x,y,gx,gy){
+    if(!earthquake.active||!earthquake.cells[gx+','+gy])return;
+    detailLine(x-12,y+5,x-5,y+1,'#492f2b',2);detailLine(x-5,y+1,x-1,y+6,'#492f2b',2);detailLine(x-5,y+1,x+2,y-3,'#492f2b',2);detailLine(x+2,y-3,x+11,y+1,'#492f2b',2);
+    poly([[x-15,y+4],[x-10,y+1],[x-6,y+4],[x-11,y+7]],'#66584b','#362f2b');poly([[x+7,y+5],[x+13,y+2],[x+16,y+6],[x+10,y+8]],'#80684f','#362f2b');
+    if(earthquake.epicenter&&earthquake.epicenter[0]===gx&&earthquake.epicenter[1]===gy){ctx.strokeStyle='#f0c45e';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-5,9,0,Math.PI*2);ctx.stroke();detailLine(x-5,y-5,x+5,y-5,'#f0c45e',1);}
+  }
   function drawPlaceMarker(x,y,place,v){
     if(!place||!place.lead)return;
     if(place.type==='plaza'){rect(x-5,y-4,10,3,'#6c7467');rect(x-2,y-9,4,6,'#d8e2ca');rect(x-4,y-10,8,2,v.player===0?'#eaa55c':'#78c8c5');}
@@ -1024,7 +1136,7 @@
     else if(place.type==='villa'){rect(x-15,y-15,2,13,'#485638');rect(x-18,y-19,8,7,'#3f7546');}
   }
   function drawReviewBuilding(type,x,y,v){
-    if(type==='house')drawBuilding(x,y,v);else if(type==='villa')drawVilla(x,y,v);else if(type==='farmstead')drawFarmsteadBuilding(x,y,v);else if(type==='depot')drawDepotBuilding(x,y,v);else if(type==='market')drawMarketBuilding(x,y,v);else if(type==='agency')drawAgencyBuilding(x,y,v);else if(type==='center')drawVillageCenter(x,y,v,false);else if(type==='plaza')drawPlazaCenter(x,y,v,false);else if(type==='commune')drawCommuneBarn(x,y,v);else if(type==='spiritual'||type==='library'||type==='hospital')drawCivicBuilding(x,y,type,v);else drawRareBusiness(x,y,type,v);
+    if(type==='house')drawBuilding(x,y,v);else if(type==='villa')drawVilla(x,y,v);else if(type==='farmstead')drawFarmsteadBuilding(x,y,v);else if(type==='depot')drawDepotBuilding(x,y,v);else if(type==='market')drawMarketBuilding(x,y,v);else if(type==='agency')drawAgencyBuilding(x,y,v);else if(type==='center')drawVillageCenter(x,y,v,false);else if(type==='plaza')drawPlazaCenter(x,y,v,false);else if(type==='commune')drawCommuneBarn(x,y,v);else if(type==='spiritual'||type==='library'||type==='hospital'||type==='park')drawCivicBuilding(x,y,type,v);else if(type==='art'||type==='yoga'||type==='lawyer'||type==='botanica')drawNeighborhoodBusiness(x,y,type,v);else drawRareBusiness(x,y,type,v);
   }
   function drawReviewLabels(){
     ctx.save();ctx.font='bold 6px Courier New';ctx.textAlign='center';ctx.textBaseline='middle';Object.keys(reviewArt).forEach(function(key){var c=key.split(',').map(Number),p=iso(c[0],c[1]),label=reviewArt[key].toUpperCase(),w=ctx.measureText(label).width+5;rect(p.x-w/2,p.y+8,w,8,'rgba(23,31,30,.88)');ctx.fillStyle='#fff1c5';ctx.fillText(label,p.x,p.y+12);});ctx.font='bold 9px Courier New';ctx.textAlign='left';rect(12,510,696,20,'rgba(23,31,30,.86)');ctx.fillStyle='#f3ddb0';ctx.fillText('HEARTH · ITALIANATE     ARCHITECTURE REVIEW     HARBOR · MOROCCAN',24,520);ctx.restore();
@@ -1042,16 +1154,24 @@
       rect(bx-1,by-10,3,5,col);rect(bx,by-13,3,3,'#d7a36b');
     });
   }
+  function drawCargoBoats(water){
+    water.routes.slice(0,8).forEach(function(route,index){
+      var path=route.path;if(path.length<2)return;var travel=reduceMotion?(.24+(index*.19)% .55):(tick*.0022+index*.31)%1,span=path.length-1,pos=travel*span,segment=Math.min(span-1,Math.floor(pos)),mix=pos-segment,a=iso(path[segment][0],path[segment][1]),b=iso(path[segment+1][0],path[segment+1][1]),x=a.x+(b.x-a.x)*mix,y=a.y+(b.y-a.y)*mix+4,angle=Math.atan2(b.y-a.y,b.x-a.x),accent=route.player===0?'#e98647':'#74c7c3';
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle='rgba(220,244,232,.62)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-18,-4);ctx.lineTo(-8,0);ctx.lineTo(-18,4);ctx.stroke();
+      poly([[-11,-5],[10,-4],[14,0],[10,5],[-11,5],[-15,0]],'#684a32','#2d3330');poly([[-9,-3],[9,-2],[11,0],[9,3],[-9,3]],accent,'#f0d18a');rect(-6,-7,6,5,'#b8753d');rect(1,-7,6,5,'#d5a04d');rect(-5,-8,4,1,'#f4d583');rect(2,-8,4,1,'#f4d583');detailLine(8,-4,8,-14,'#493a30',1.5);poly([[8,-14],[14,-11],[8,-8]],accent,'#493a30');ctx.restore();
+    });
+  }
   function drawBoard(sea){
     drawIsland(sea); drawRailway(); drawRoads();
-    var pulse=communityData(),places=pulse.places,civic=pulse.civic,food=pulse.food,rare=pulse.rare,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
+    var pulse=communityData(),places=pulse.places,civic=pulse.civic,food=pulse.food,rare=pulse.rare,neighborhood=pulse.neighborhood,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
     items.sort(function(a,b){return a.p.y-b.p.y;});
-    items.forEach(function(it){var v=board[it.y][it.x],p=it.p,land=terrain[it.y][it.x],place=places.map[it.x+','+it.y],service=civic.map[it.x+','+it.y],foodSite=food.map[it.x+','+it.y],rareSite=rare.map[it.x+','+it.y];if(v){
-      if(reviewMode&&reviewArt[it.x+','+it.y]){drawReviewBuilding(reviewArt[it.x+','+it.y],p.x,p.y+3,v);return;}
-      var depot=isDepot(it.x,it.y),homestead=isIsolatedHouse(it.x,it.y),overWater=land==='wetland',landmark=!!service||depot||!!foodSite||!!rareSite||overWater||(place&&(place.type==='villa'||place.lead));
+    items.forEach(function(it){var v=board[it.y][it.x],p=it.p,land=terrain[it.y][it.x],place=places.map[it.x+','+it.y],service=civic.map[it.x+','+it.y],foodSite=food.map[it.x+','+it.y],rareSite=rare.map[it.x+','+it.y],neighborhoodSite=neighborhood.map[it.x+','+it.y];if(v){
+      if(reviewMode&&reviewArt[it.x+','+it.y]){drawReviewBuilding(reviewArt[it.x+','+it.y],p.x,p.y+3,v);drawEarthquakeDamage(p.x,p.y+4,it.x,it.y);return;}
+      var depot=isDepot(it.x,it.y),homestead=isIsolatedHouse(it.x,it.y),overWater=land==='wetland',landmark=!!service||depot||!!foodSite||!!rareSite||!!neighborhoodSite||overWater||(place&&(place.type==='villa'||place.lead));
       drawPlaceGround(p.x,p.y,place,v);drawWellnessGarden(p.x,p.y,pulse.tiles[it.x+','+it.y],v.seed);if(waterAccessAt(it.x,it.y)&&!overWater)drawWaterAccess(p.x,p.y);
       if(!service&&!depot&&!rareSite&&(land==='grove'||(it.x+it.y+v.seed)%5===0))drawTree(p.x-14,p.y-2,v.seed,sea);
       if(overWater)drawFloatingBuilding(p.x,p.y+3,v,rareSite);
+      else if(neighborhoodSite)drawNeighborhoodBusiness(p.x,p.y+3,neighborhoodSite,v);
       else if(rareSite)drawRareBusiness(p.x,p.y+3,rareSite,v);
       else if(service)drawCivicBuilding(p.x,p.y+3,service,v);
       else if(depot)drawDepotBuilding(p.x,p.y+3,v);
@@ -1066,12 +1186,13 @@
       else if(homestead)drawFarmsteadBuilding(p.x,p.y+3,v);
       else drawBuilding(p.x,p.y+3,v);
       if(!landmark&&!homestead&&isShop(v))drawShopfront(p.x,p.y+3,v);
-      if(!service&&!rareSite&&land==='field'&&foodSite!=='market')drawFarm(p.x,p.y,v);
-      if(!service&&!rareSite&&land==='pasture'&&foodSite!=='market')drawHerd(p.x,p.y,v);
+      if(!service&&!rareSite&&!neighborhoodSite&&land==='field'&&foodSite!=='market')drawFarm(p.x,p.y,v);
+      if(!service&&!rareSite&&!neighborhoodSite&&land==='pasture'&&foodSite!=='market')drawHerd(p.x,p.y,v);
+      drawEarthquakeDamage(p.x,p.y+4,it.x,it.y);
     } else {
       var near=neighbors(it.x,it.y).some(function(n){return !!board[n[1]][n[0]];}); if(near&&rng(valleySeed+it.x*20+it.y*7+seasonIndex)>.68){var col=seasonIndex===3?'#e8eee7':seasonIndex===2?'#c2753c':'#d7cf69';rect(p.x-1,p.y-4,2,4,col);}
     }});
-    if(reviewMode)drawReviewLabels();else drawBicyclists(pulse.economy.drivers);drawFreightTrain();
+    if(reviewMode){drawCargoBoats(pulse.waterTrade);drawReviewLabels();}else {drawCargoBoats(pulse.waterTrade);drawBicyclists(pulse.economy.drivers);}drawFreightTrain();
     var cp=iso(cursor.x,cursor.y),cc=tileCorners(cursor.x,cursor.y,elevation[cursor.y][cursor.x]); if(!board[cursor.y][cursor.x]){ctx.strokeStyle=turn===0?'#ffe184':'#b7ffff';ctx.lineWidth=2;ctx.beginPath();cc.forEach(function(q,i){i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);});ctx.closePath();ctx.stroke();}
   }
   function drawWeather(sea,dt){
