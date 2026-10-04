@@ -21,6 +21,9 @@ Open `index.html` in any browser — no build, no server, no dependencies.
 - **Living places** — hillside villas, village centers, farming communes, and plazas evolve as communities mature
 - **People with jobs** — farmers, cow herders, shopkeepers, and bicyclists (35% of connected riders become cargo cycle couriers running walk-in trade and delivery routes)
 - **Wellness-driven growth** — per-tile wellness and quality of life drive growth; gardens bloom on the healthiest plots; hospitals, spiritual places, libraries, and parks emerge in mature, road-linked communities
+- **Living landscape** — open water carries drifting ripples, wetlands shimmer, tree crowns sway in the wind (autumn blows harder), and the whole isometric valley slowly turntables in 3D
+- **Distinct architecture** — every building type has its own silhouette: Italianate Hearth (tile roofs, campaniles, colonnades) vs Moroccan Harbor (crenellations, zellige bands, minarets)
+- **Strained clusters** — rushing 3+ adjacent houses within 6 turns strains the cluster: lost wellbeing, paused maturation, and a scaling penalty off the mayor's effort score
 - **Changing seasons and weather**, rendered at true 2× resolution with a custom isometric valley favicon
 
 Built as a single self-contained `index.html` (+ favicon).
