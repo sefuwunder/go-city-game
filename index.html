@@ -39,6 +39,10 @@
     .cpu-mark { color:var(--sea); font-weight:900; }
     .score { font-weight:900; font-size:16px; }
     .turn { text-align:center; font-weight:900; white-space:nowrap; }
+    .turn small { display:block; margin-top:3px; color:var(--muted); font-size:8px; letter-spacing:.06em; }
+    .signals { display:grid; gap:7px; }
+    .signal { margin:0; font-size:10px; line-height:1.4; color:var(--muted); }
+    .signal b { color:var(--ink); }
     button:disabled { opacity:.5; cursor:wait; }
     .viewport {
       position:relative; border:3px solid #1a2527; background:#10191c; padding:5px;
@@ -109,12 +113,12 @@
 <main class="game">
   <section class="stage" aria-label="Game board">
     <div class="hud">
-      <div class="faction"><span class="stone hearth"></span><div><span class="label">Hearth · Italianate</span><span class="score" id="score0">0</span></div></div>
-      <div class="turn" id="turnLabel">HEARTH'S TURN</div>
-      <div class="faction"><div><span class="label">Harbor · Moroccan · <span class="cpu-mark">CPU</span></span><span class="score" id="score1">0</span></div><span class="stone harbor"></span></div>
+      <div class="faction"><span class="stone hearth"></span><div><span class="label">You · Mayor of Hearth</span><span class="score" id="score0">0</span></div></div>
+      <div class="turn"><span id="turnLabel">HEARTH BUILDS</span><small><span id="sharedEffort">0</span> SHARED EFFORT</small></div>
+      <div class="faction"><div><span class="label">CPU · Mayor of Harbor</span><span class="score" id="score1">0</span></div><span class="stone harbor"></span></div>
     </div>
     <div class="viewport">
-      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A high-detail twenty by twenty isometric Go board with roads, a weekly freight train, shops, hospitals, spiritual places, libraries, parks, cycle deliveries, wellbeing gardens, hills, valleys, and growing communities. Tap an empty plot to settle it."></canvas>
+      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A high-detail twenty by twenty isometric valley where two mayors build neighboring communities together through weather, water access, farms, markets, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
       <div class="film"></div><div class="toast" id="toast"></div>
     </div>
     <p class="mobile-hint">Tap a glowing plot to settle it. The whole twenty-by-twenty valley fits.</p>
@@ -174,16 +178,40 @@
         <div class="life-item"><span>thriving tiles</span><b id="thriving">0</b></div>
       </div>
     </section>
+    <section class="panel life" aria-label="Water, weather, and food chain">
+      <h3 class="life-title">Water + food chain</h3>
+      <div class="life-grid">
+        <div class="life-item"><span>water access</span><b id="waterAccess">0</b></div>
+        <div class="life-item"><span>weather stress</span><b id="weatherStress">0</b></div>
+        <div class="life-item"><span>farm harvest</span><b id="harvest">0</b></div>
+        <div class="life-item"><span>food moved</span><b id="foodSales">0</b></div>
+        <div class="life-item"><span>farmers markets</span><b id="farmersMarkets">0</b></div>
+        <div class="life-item"><span>marketing agencies</span><b id="agencies">0</b></div>
+        <div class="life-item"><span>homestead farms</span><b id="homesteads">0</b></div>
+        <div class="life-item"><span>rural road links</span><b id="ruralRoads">0</b></div>
+        <div class="life-item"><span>rail depots</span><b id="depots">0</b></div>
+        <div class="life-item"><span>depot goods</span><b id="depotGoods">0</b></div>
+      </div>
+    </section>
+    <section class="panel" aria-label="Mayors' imperfect signals">
+      <h3 class="life-title" style="margin:-13px -13px 10px">Mayors’ imperfect signals</h3>
+      <div class="signals">
+        <p class="signal"><b>Hearth:</b> <span id="humanSignal">You can place, but Harbor only sees the result.</span></p>
+        <p class="signal"><b>Harbor:</b> <span id="cpuSignal">The other mayor studies the valley in silence.</span></p>
+      </div>
+    </section>
     <section class="actions">
       <button id="pass">Pass season</button><button class="new" id="newGame">New valley</button>
     </section>
     <section class="panel">
       <button class="rule-button" id="rulesToggle" aria-expanded="false">How the valley grows +</button>
       <div class="rulebook" id="rules">
-        <strong>Settle like Go.</strong> You lead Hearth; the CPU guides Harbor. Surround a rival district on all four sides to return it to meadow. A settlement with no breathing room is not allowed.<br><br>
-        <strong>Grow like a city.</strong> Every six turns the season changes. Hearth raises warm Italianate streets; Harbor builds cool Moroccan courtyards. Connected neighbors lay roads automatically. Fields bring farmers, pastures bring cow herders, mature streets open small shops, and road-linked neighborhoods welcome bicyclists.<br><br>
-        <strong>Trade close to home.</strong> Shops serve people in their connected community. Walk-ins buy locally, while 35% of bicyclists become cycle couriers and carry up to four orders each. Cargo boxes on moving bicycles show deliveries underway. A road network with shops, residents, and riders produces more local trade.<br><br>
-        <strong>The weekly goods train.</strong> Every six turns mark a week. The freight train circles the whole valley and delivers two crates to every settled plot, no matter which community lives there. Fresh rail service lifts wellbeing across the entire area for the new week; watch the timetable beside the year.<br><br>
+        <strong>Two mayors, one valley.</strong> You lead Hearth; the CPU leads Harbor. Both mayors try to turn effort into a thriving shared valley, but neither can see the other’s plan—only each new settlement and an imperfect public signal. Your effort scores combine above the board. Isolated districts still return to meadow, and every settlement needs breathing room.<br><br>
+        <strong>Grow like a city.</strong> Every six turns the season changes. Hearth raises warm Italianate streets; Harbor builds cool Moroccan courtyards. Connected neighbors lay roads automatically. Individual houses and otherwise-alone neighboring pairs become farm homesteads; chains of same-community houses within two plots slowly join by rural roads after a season. The CPU favors useful land, water, and connections rather than conquest, though its priorities remain partly hidden.<br><br>
+        <strong>Follow the water.</strong> Wetlands and neighboring plots provide attractive water access, lifting wellbeing and growth. Spring rain can flood low ground; flooded farms produce less. Summer drought stresses dry inland land, while waterside settlements stay resilient. Blue cisterns mark settled plots with access.<br><br>
+        <strong>Complete the food chain.</strong> Settled fields and pastures harvest food each week. Farms route it through connected commerce: rural farming communes open farmers markets, while village centers and plazas with shops form marketing agencies that raise demand. Harvest becomes stock, then food moved through shops, markets, and deliveries.<br><br>
+        <strong>Trade close to home.</strong> Shops serve people in their connected community. Walk-ins buy locally, while 35% of bicyclists become cycle couriers and carry up to four orders each. Farmers markets add rural trade; marketing agencies strengthen population-center commerce.<br><br>
+        <strong>The weekly goods train.</strong> Every six turns mark a week. The freight train circles the whole valley and delivers two crates to every settled plot, no matter which community lives there. Trackside houses mature into depots after a season; when the train passes, each depot sends bonus goods through its connected rural-road community. Fresh rail service lifts wellbeing across the entire area for the new week; watch the timetable beside the year.<br><br>
         <strong>Wellbeing shapes growth.</strong> Quality of life rises with green land, roads, nearby shops, civic care, lively places, good weather, and manageable density. Healthy tiles gain more citizens; tiles above 58% mature each season, and tiles above 82% can grow twice. Struggling tiles pause their architectural growth. Flowering gardens mark thriving plots.<br><br>
         <strong>Care and culture emerge.</strong> Growing connected communities establish <strong>spiritual places</strong> first, then leafy <strong>parks</strong>, <strong>libraries</strong>, and finally <strong>hospitals</strong>. Each serves its whole connected road network and lifts quality of life. Italianate Hearth and Moroccan Harbor give every civic building its own architectural character.<br><br>
         <strong>Places emerge.</strong> Mature, small hillside clusters become <strong>villas</strong>. Five connected homes make a <strong>village center</strong>. Four or more homes become a <strong>farming commune</strong> when at least half sit on fields or pasture. A dense neighborhood of nine or more forms a paved <strong>plaza</strong>. Growth can change a place again as its shape and land use evolve.<br><br>
@@ -202,12 +230,12 @@
   ctx.setTransform(RENDER_SCALE,0,0,RENDER_SCALE,0,0);
   ctx.imageSmoothingEnabled=false;
   var seasons=[
-    {name:'Spring', weather:'Soft rain', growth:2, sky:['#789a9c','#c0c7a0'], ground:'#80a866', edge:'#526b4b', accent:'#efb86c'},
-    {name:'Summer', weather:'Sunshowers', growth:2, sky:['#4e91a5','#ebc974'], ground:'#74a44e', edge:'#48653f', accent:'#f5d269'},
-    {name:'Autumn', weather:'West wind', growth:1, sky:['#876f72','#d9a065'], ground:'#9b8746', edge:'#5e5035', accent:'#d9673e'},
+    {name:'Spring', weather:'Heavy rain · flood watch', growth:2, sky:['#789a9c','#c0c7a0'], ground:'#80a866', edge:'#526b4b', accent:'#efb86c'},
+    {name:'Summer', weather:'Dry heat · drought inland', growth:1, sky:['#4e91a5','#ebc974'], ground:'#74a44e', edge:'#48653f', accent:'#f5d269'},
+    {name:'Autumn', weather:'Harvest wind', growth:1, sky:['#876f72','#d9a065'], ground:'#9b8746', edge:'#5e5035', accent:'#d9673e'},
     {name:'Winter', weather:'First snow', growth:0, sky:['#667986','#c7d0ce'], ground:'#b6c2b3', edge:'#697a73', accent:'#e9f0e8'}
   ];
-  var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainRuns, lastTrainMove, trainStartedAt, cpuThinking=false, cpuTimer=null;
+  var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainGoodsByPlayer, depotGoods, trainRuns, lastTrainMove, trainStartedAt, climate, foodStocks, foodHarvest, foodSales, humanSignal, cpuSignal, cpuThinking=false, cpuTimer=null;
   var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function makeTerrain(){
     var rows=[]; elevation=[];
@@ -225,17 +253,69 @@
     }rows.push(row);elevation.push(heights);} 
     var mid=Math.floor(N/2);rows[mid][mid]='meadow';elevation[mid][mid]=0;return rows;
   }
+  function waterAccessAt(x,y){
+    if(terrain[y][x]==='wetland')return true;
+    return neighbors(x,y).some(function(n){return terrain[n[1]][n[0]]==='wetland';});
+  }
+  function refreshClimate(){
+    climate={flooded:{},drought:{},floodCount:0,droughtCount:0};
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var key=x+','+y,land=terrain[y][x],roll=rng(valleySeed+year*131+x*47+y*89);
+      if(seasonIndex===0&&(land==='wetland'||elevation[y][x]<0)&&roll>.46){climate.flooded[key]=1;climate.floodCount++;}
+      if(seasonIndex===1&&!waterAccessAt(x,y)&&(land==='field'||land==='pasture'||land==='meadow'||land==='ridge')&&roll>.34){climate.drought[key]=1;climate.droughtCount++;}
+    }
+  }
+  function hazardAt(x,y){var key=x+','+y;return climate.flooded[key]?'flood':climate.drought[key]?'drought':null;}
+  function describeIntent(x,y){
+    var land=terrain[y][x];
+    if(waterAccessAt(x,y))return 'The move seems to reach for water, though its larger plan is unclear.';
+    if(land==='field'||land==='pasture')return 'The move hints at a food route, but not where it will lead.';
+    if(neighbors(x,y).some(function(n){return !!board[n[1]][n[0]];}))return 'The move answers a nearby street; the next step is still hidden.';
+    return 'The move opens new ground without explaining why.';
+  }
   function reset(){
     clearTimeout(cpuTimer); cpuThinking=false;
     valleySeed=Math.floor(Math.random()*900000)+100000; terrain=makeTerrain();
     board=[]; for(var y=0;y<N;y++){ var row=[]; for(var x=0;x<N;x++) row.push(null); board.push(row); }
     turn=0; moves=0; seasonIndex=0; year=1; captures=[0,0]; log=[]; cursor={x:Math.floor(N/2),y:Math.floor(N/2)}; particles=[]; tick=0; lastTime=performance.now();
-    trainGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;
-    addLog('The weekly goods train waits at the valley depot.');
-    addLog('A new patchwork valley opens: fields, pasture, woods and wetland.');
-    addLog('The spring thaw opens a new valley. You lead Hearth.'); updateUI();
+    trainGoods=0; trainGoodsByPlayer=[0,0]; depotGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;foodStocks={};foodHarvest=0;foodSales=0;
+    humanSignal='You can place, but Harbor only sees the result.';cpuSignal='The other mayor studies the valley in silence.';refreshClimate();
+    addLog(climate.floodCount+' low plots are under the spring flood watch.');
+    addLog('Two mayors begin one valley without sharing their full plans.');
+    addLog('The weekly goods train waits at the valley depot.'); updateUI();
   }
   function neighbors(x,y){ return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(function(p){return p[0]>=0&&p[0]<N&&p[1]>=0&&p[1]<N;}); }
+  function friendlyWithin(x,y,player,distance){
+    var cells=[];for(var dy=-distance;dy<=distance;dy++)for(var dx=-distance;dx<=distance;dx++){
+      if((!dx&&!dy)||Math.abs(dx)+Math.abs(dy)>distance)continue;var nx=x+dx,ny=y+dy;
+      if(nx>=0&&ny>=0&&nx<N&&ny<N&&board[ny][nx]&&board[ny][nx].player===player)cells.push([nx,ny]);
+    }return cells;
+  }
+  function isIsolatedHouse(x,y){
+    var v=board[y][x];if(!v)return false;var close=friendlyWithin(x,y,v.player,1);if(close.length===0)return true;if(close.length!==1)return false;
+    var partner=close[0],partnerClose=friendlyWithin(partner[0],partner[1],v.player,1);return partnerClose.length===1&&partnerClose[0][0]===x&&partnerClose[0][1]===y;
+  }
+  function hasSeasoned(v){return !!v&&v.bornWeek<trainRuns;}
+  function isTrackside(x,y){return x===0||y===0||x===N-1||y===N-1;}
+  function isDepot(x,y){var v=board[y][x];return hasSeasoned(v)&&isTrackside(x,y);}
+  function ruralRoadLinks(){
+    var links=[],offsets=[[2,0],[0,2],[1,1],[-1,1]];
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){var v=board[y][x];if(!hasSeasoned(v))continue;
+      offsets.forEach(function(o){var nx=x+o[0],ny=y+o[1];if(nx<0||ny<0||nx>=N||ny>=N)return;var q=board[ny][nx];if(!q||q.player!==v.player||!hasSeasoned(q))return;
+        if((o[0]===2&&board[y][x+1])||(o[1]===2&&board[y+1][x]))return;
+        links.push({a:[x,y],b:[nx,ny],player:v.player});
+      });
+    }return links;
+  }
+  function ruralNetworkData(){
+    var parent={},cells={};
+    function key(x,y){return x+','+y;}function root(k){while(parent[k]!==k){parent[k]=parent[parent[k]];k=parent[k];}return k;}function join(a,b){var ra=root(a),rb=root(b);if(ra!==rb)parent[rb]=ra;}
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++)if(board[y][x]){var k=key(x,y);parent[k]=k;cells[k]=[x,y];}
+    for(var yy=0;yy<N;yy++)for(var xx=0;xx<N;xx++){var v=board[yy][xx];if(!v)continue;neighbors(xx,yy).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===v.player)join(key(xx,yy),key(n[0],n[1]));});}
+    ruralRoadLinks().forEach(function(link){join(key(link.a[0],link.a[1]),key(link.b[0],link.b[1]));});
+    var groups={};Object.keys(cells).forEach(function(k){var r=root(k);if(!groups[r])groups[r]={cells:[],player:board[cells[k][1]][cells[k][0]].player,depots:0};groups[r].cells.push(cells[k]);if(isDepot(cells[k][0],cells[k][1]))groups[r].depots++;});
+    return Object.keys(groups).map(function(k){return groups[k];});
+  }
   function groupAt(x,y){
     var p=board[y][x]; if(!p)return {cells:[],libs:[]}; var stack=[[x,y]], seen={}, cells=[], libMap={}, libs=[];
     while(stack.length){ var q=stack.pop(), k=q[0]+','+q[1]; if(seen[k])continue; seen[k]=1; cells.push(q);
@@ -246,14 +326,15 @@
   function makeMove(x,y,p){
     if(x<0||y<0||x>=N||y>=N||board[y][x])return {ok:false,reason:'occupied'};
     var old=cloneBoard(), taken=0;
-    board[y][x]={player:p,age:0,pop:1,seed:(x*17+y*31+moves*13)%7};
+    board[y][x]={player:p,age:0,pop:1,bornWeek:trainRuns,seed:(x*17+y*31+moves*13)%7};
     neighbors(x,y).forEach(function(n){ var v=board[n[1]][n[0]]; if(v&&v.player!==p){ var g=groupAt(n[0],n[1]); if(g.libs.length===0){ taken+=g.cells.length; g.cells.forEach(function(c){board[c[1]][c[0]]=null;}); } } });
     if(groupAt(x,y).libs.length===0){ board=old; return {ok:false,reason:'liberty'}; }
     return {ok:true,taken:taken};
   }
   function finishMove(x,y,p,taken){
-    if(taken){ captures[p]+=taken; addLog(name(p)+' returned '+taken+' rival plot'+(taken===1?'':'s')+' to meadow.'); }
-    else addLog(name(p)+' settled '+coord(x,y)+'.');
+    if(taken){ captures[p]+=taken; addLog(name(p)+' stewarded '+taken+' isolated plot'+(taken===1?'':'s')+' back to meadow.'); }
+    else addLog(name(p)+' invested effort at '+coord(x,y)+'.');
+    if(p===0)humanSignal=describeIntent(x,y);else cpuSignal=describeIntent(x,y);
     moves++; advanceIfNeeded(); turn=1-p; cursor={x:x,y:y}; updateUI();
   }
   function humanPlace(x,y){
@@ -267,8 +348,9 @@
     var g=groupAt(x,y), friendly=0, rivals=0, threatened=0;
     neighbors(x,y).forEach(function(n){var v=board[n[1]][n[0]];if(v){if(v.player===1)friendly++;else rivals++;}});
     g.cells.forEach(function(c){neighbors(c[0],c[1]).forEach(function(n){var v=board[n[1]][n[0]];if(v&&v.player===0&&groupAt(n[0],n[1]).libs.length===1)threatened++;});});
-    var mid=(N-1)/2, center=N-(Math.abs(mid-x)+Math.abs(mid-y));
-    var score=result.taken*80+threatened*12+friendly*5+rivals*3+Math.min(g.libs.length,5)*4+center+rng(x*91+y*47+moves*19)*3;
+    var mid=(N-1)/2, center=N-(Math.abs(mid-x)+Math.abs(mid-y)),land=terrain[y][x],nearTwo=Math.max(0,friendlyWithin(x,y,1,2).length-friendlyWithin(x,y,1,1).length);
+    var usefulLand=(land==='field'||land==='pasture')?12:land==='grove'?5:0,water=waterAccessAt(x,y)?18:0,hazard=hazardAt(x,y)?-8:0,rural=nearTwo?7:0,rail=isTrackside(x,y)?6:0;
+    var score=result.taken*5+threatened*2+friendly*8+rivals*4+Math.min(g.libs.length,5)*4+center+usefulLand+water+hazard+rural+rail+rng(x*91+y*47+moves*19)*3;
     board=old; return score;
   }
   function chooseCpuMove(){
@@ -277,29 +359,36 @@
     return best;
   }
   function scheduleCPU(){
-    if(turn!==1)return; cpuThinking=true; updateUI();
+    if(turn!==1)return; cpuThinking=true;cpuSignal='Harbor is weighing water, work, and connection; its exact plan is private.'; updateUI();
     cpuTimer=setTimeout(function(){
       var choice=chooseCpuMove(); cpuThinking=false;
       if(choice){var result=makeMove(choice.x,choice.y,1);finishMove(choice.x,choice.y,1,result.taken);}
-      else {addLog('Harbor watched the weather and passed.');moves++;advanceIfNeeded();turn=0;updateUI();}
+      else {cpuSignal='Harbor withholds a move; the reason is unclear.';addLog('Harbor watched the weather and conserved effort.');moves++;advanceIfNeeded();turn=0;updateUI();}
     },520);
   }
   function humanPass(){
-    if(turn!==0||cpuThinking)return; addLog('Hearth watched the weather and passed.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
+    if(turn!==0||cpuThinking)return;humanSignal='Hearth conserves effort; Harbor can only guess why.'; addLog('Hearth watched the weather and conserved effort.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
   }
   function advanceIfNeeded(){ if(moves>0&&moves%6===0){
     var freight=runTrainDelivery();
-    seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}
-    var report=grow(); addLog('Week '+trainRuns+': the goods train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
+    seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}refreshClimate();
+    var report=grow(); addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
+    if(freight.bonus)addLog(freight.depots+' trackside depot'+(freight.depots===1?'':'s')+' routed '+freight.bonus+' bonus goods through rural communities.');
     addLog(seasons[seasonIndex].name+' arrived: '+seasons[seasonIndex].weather.toLowerCase()+'.');
+    if(climate.floodCount)addLog(climate.floodCount+' low plots flooded after the spring rain.');
+    if(climate.droughtCount)addLog(climate.droughtCount+' inland plots entered summer drought.');
+    if(report.food.harvest)addLog('Food chain: farms harvested '+report.food.harvest+'; commerce moved '+report.food.sold+' into the valley.');
     if(report.trade) addLog(report.deliveries+' cycle deliveries helped '+report.trade+' local trades change hands.');
-    if(report.opened.length) addLog('The community opened '+report.opened.join(', ')+'.');
-    addLog('Quality of life is '+report.average+'%; '+report.matured+' tile'+(report.matured===1?'':'s')+' grew.');
+    if(report.opened.length) addLog('The communities opened '+report.opened.join(', ')+'.');
+    addLog('Shared wellbeing is '+report.average+'%; '+report.matured+' tile'+(report.matured===1?'':'s')+' grew.');
   } }
   function runTrainDelivery(){
-    var stops=0;for(var y=0;y<N;y++)for(var x=0;x<N;x++)if(board[y][x])stops++;
-    var crates=stops*2;trainGoods+=crates;trainRuns++;lastTrainMove=moves;trainStartedAt=performance.now();
-    return {crates:crates,stops:stops};
+    var stops=0,baseByPlayer=[0,0],bonusByPlayer=[0,0],depots=0;
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++)if(board[y][x]){stops++;baseByPlayer[board[y][x].player]+=2;}
+    ruralNetworkData().forEach(function(network){if(!network.depots)return;depots+=network.depots;bonusByPlayer[network.player]+=network.cells.length*2*network.depots;});
+    var bonus=bonusByPlayer[0]+bonusByPlayer[1],crates=stops*2+bonus;
+    trainGoods+=crates;depotGoods+=bonus;trainGoodsByPlayer[0]+=baseByPlayer[0]+bonusByPlayer[0];trainGoodsByPlayer[1]+=baseByPlayer[1]+bonusByPlayer[1];trainRuns++;lastTrainMove=moves;trainStartedAt=performance.now();
+    return {crates:crates,stops:stops,bonus:bonus,depots:depots,byPlayer:[baseByPlayer[0]+bonusByPlayer[0],baseByPlayer[1]+bonusByPlayer[1]]};
   }
   function grow(){
     var pulse=communityData(), seen={}, matured=0;
@@ -307,15 +396,26 @@
       var v=board[y][x], key=x+','+y; if(!v||seen[key])continue;
       var g=groupAt(x,y); g.cells.forEach(function(c){seen[c[0]+','+c[1]]=1;});
       g.cells.forEach(function(c){
-        var cx=c[0],cy=c[1],b=board[cy][cx],land=terrain[cy][cx],well=pulse.tiles[cx+','+cy],w=well?well.score:45;
-        var openness=Math.floor(g.libs.length/5), health=w>=80?2:w>=60?1:w<35?-1:0, tradeBoost=well&&well.tradeAccess?1:0;
-        var gain=Math.max(0,Math.min(6,seasons[seasonIndex].growth+openness+health+tradeBoost+((land==='field'||land==='pasture')?1:0)));
-        var ageGain=w>=82?2:w>=58?1:0; b.wellness=w; b.age+=ageGain; b.pop+=gain; matured+=ageGain;
+        var cx=c[0],cy=c[1],b=board[cy][cx],land=terrain[cy][cx],well=pulse.tiles[cx+','+cy],w=well?well.score:45,hazard=hazardAt(cx,cy);
+        var openness=Math.floor(g.libs.length/5), health=w>=80?2:w>=60?1:w<35?-1:0, tradeBoost=well&&well.tradeAccess?1:0,waterBoost=waterAccessAt(cx,cy)?1:0,homesteadBoost=isIsolatedHouse(cx,cy)?1:0,weatherLoss=hazard==='flood'?2:hazard==='drought'?3:0;
+        var gain=Math.max(0,Math.min(6,seasons[seasonIndex].growth+openness+health+tradeBoost+waterBoost+homesteadBoost+((land==='field'||land==='pasture')?1:0)-weatherLoss));
+        var ageGain=w>=82?2:w>=58?1:0;if(hazard)ageGain=Math.max(0,ageGain-1); b.wellness=w; b.age+=ageGain; b.pop+=gain; matured+=ageGain;
       });
     }
     var after=communityData(),opened=[];
     [['hospitals','hospital','hospitals'],['spiritual','spiritual place','spiritual places'],['libraries','library','libraries'],['parks','park','parks']].forEach(function(pair){var gained=after.civic.counts[pair[0]]-pulse.civic.counts[pair[0]];if(gained>0)opened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
-    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened};
+    var food=runFoodCycle(after);
+    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened,food:food};
+  }
+  function runFoodCycle(data){
+    var harvest=0,sold=0,nextStocks={};
+    data.food.networks.forEach(function(network){
+      var stored=0;network.cells.forEach(function(key){stored+=foodStocks[key]||0;});
+      var available=stored+network.harvest,networkSold=Math.min(available,network.capacity),left=available-networkSold;
+      harvest+=network.harvest;sold+=networkSold;if(left&&network.cells.length)nextStocks[network.cells[0]]=left;
+    });
+    foodStocks=nextStocks;foodHarvest=harvest;foodSales+=sold;
+    return {harvest:harvest,sold:sold,stock:Object.keys(foodStocks).reduce(function(total,key){return total+foodStocks[key];},0)};
   }
   function territoryData(){
     var seen={}, count=[0,0], neutral=0;
@@ -365,42 +465,67 @@
     return {map:map,counts:counts};
   }
   function isShop(v){return !!v&&v.age>=1&&v.seed%3===0;}
+  function foodNetworkData(places,civic){
+    var seen={},map={},markets=0,agencies=0,potential=0,farms=0,homesteads=0,networks=[];
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var key=x+','+y,v=board[y][x];if(!v||seen[key])continue;
+      var g=groupAt(x,y),groupFarms=0,groupShops=0,groupPotential=0,groupMarkets=0,groupAgencies=0,leadSites=[],cellKeys=[];
+      g.cells.forEach(function(c){
+        var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],place=places.map[cx+','+cy],hazard=hazardAt(cx,cy),cellKey=cx+','+cy,yieldBase=0,homestead=isIsolatedHouse(cx,cy);seen[cellKey]=1;cellKeys.push(cellKey);
+        if(!civic.map[cellKey]){
+          if(land==='field'||land==='pasture')yieldBase=(land==='field'?3:2)+Math.floor(cell.age/2);
+          if(homestead){yieldBase+=2;homesteads++;}
+          if(hazard==='flood')yieldBase=Math.floor(yieldBase*.5);if(hazard==='drought')yieldBase=Math.floor(yieldBase*.35);
+          if(yieldBase){potential+=yieldBase;groupPotential+=yieldBase;groupFarms++;farms++;}
+        }
+        if(isShop(cell)&&!civic.map[cellKey])groupShops++;
+        if(place&&place.lead)leadSites.push({key:cellKey,type:place.type});
+      });
+      leadSites.forEach(function(site){
+        if(site.type==='commune'&&groupFarms){map[site.key]='market';markets++;groupMarkets++;}
+        else if((site.type==='center'||site.type==='plaza')&&groupShops){map[site.key]='agency';agencies++;groupAgencies++;}
+      });
+      networks.push({cells:cellKeys,harvest:groupPotential,capacity:groupShops*2+groupMarkets*8+groupAgencies*6});
+    }
+    return {map:map,markets:markets,agencies:agencies,potential:potential,farms:farms,homesteads:homesteads,networks:networks};
+  }
   function communityData(){
-    var seen={},tiles={},places=placeData(),civic=civicData(),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0},wellTotal=0,occupied=0,thriving=0,railLift=moves-lastTrainMove<6?5:0;
+    var seen={},tiles={},places=placeData(),civic=civicData(),food=foodNetworkData(places,civic),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0},wellTotal=0,occupied=0,thriving=0,waterCount=0,weatherStress=0,railLift=moves-lastTrainMove<6?5:0;
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){
       var key=x+','+y,v=board[y][x]; if(!v||seen[key])continue;
-      var g=groupAt(x,y),shops=0,people=0,connections=0,services={hospital:0,spiritual:0,library:0,park:0};
-      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],service=civic.map[cx+','+cy];seen[cx+','+cy]=1;people+=cell.pop;if(isShop(cell)&&!service)shops++;if(service)services[service]++;
+      var g=groupAt(x,y),shops=0,people=0,connections=0,groupFarms=0,groupMarkets=0,groupAgencies=0,services={hospital:0,spiritual:0,library:0,park:0};
+      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],service=civic.map[cx+','+cy],foodSite=food.map[cx+','+cy];seen[cx+','+cy]=1;people+=cell.pop;if(isShop(cell)&&!service)shops++;if(service)services[service]++;if(!service&&(terrain[cy][cx]==='field'||terrain[cy][cx]==='pasture'))groupFarms++;if(foodSite==='market')groupMarkets++;if(foodSite==='agency')groupAgencies++;
         if(cx+1<N&&board[cy][cx+1]&&board[cy][cx+1].player===cell.player)connections++;
         if(cy+1<N&&board[cy+1][cx]&&board[cy+1][cx].player===cell.player)connections++;
       });
-      var cyclists=Math.ceil(connections/2),drivers=cyclists?Math.max(1,Math.round(cyclists*.35)):0,walkins=Math.min(people,shops*3),deliveries=shops?Math.min(Math.max(0,people-walkins),drivers*4):0;
-      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8;
+      var cyclists=Math.ceil(connections/2),drivers=cyclists?Math.max(1,Math.round(cyclists*.35)):0,walkins=Math.min(people,shops*3+groupMarkets*4),deliveries=shops?Math.min(Math.max(0,people-walkins),drivers*4+groupAgencies*3):0;
+      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8,foodLift=(groupFarms&&shops?5:0)+groupMarkets*5+groupAgencies*4;
       economy.shops+=shops;economy.bicyclists+=cyclists;economy.drivers+=drivers;economy.walkins+=walkins;economy.deliveries+=deliveries;economy.trade+=walkins+deliveries;
       g.cells.forEach(function(c){
-        var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],friends=0,place=places.map[cx+','+cy],service=civic.map[cx+','+cy],seasonLift=[8,5,2,-4][seasonIndex];
+        var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],friends=0,place=places.map[cx+','+cy],service=civic.map[cx+','+cy],seasonLift=[6,2,3,-4][seasonIndex],water=waterAccessAt(cx,cy),hazard=hazardAt(cx,cy);
         neighbors(cx,cy).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===cell.player)friends++;});
-        var green={meadow:9,field:5,pasture:7,grove:13,wetland:4,ridge:6}[land],placeLift=place?(place.type==='plaza'?14:place.type==='center'?10:place.type==='commune'?8:12):0;
-        var access=shops>0,score=46+seasonLift+green+railLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-Math.max(0,cell.pop-18);
-        score=Math.max(18,Math.min(98,Math.round(score)));tiles[cx+','+cy]={score:score,tradeAccess:access,driverAccess:drivers>0,service:service};wellTotal+=score;occupied++;if(score>=72)thriving++;
+        var green={meadow:9,field:5,pasture:7,grove:13,wetland:7,ridge:6}[land],placeLift=place?(place.type==='plaza'?14:place.type==='center'?10:place.type==='commune'?8:12):0;
+        var access=shops>0,score=42+seasonLift+green+railLift+(water?13:0)+foodLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-(hazard==='flood'?15:hazard==='drought'?18:0)-Math.max(0,cell.pop-18);
+        score=Math.max(18,Math.min(98,Math.round(score)));tiles[cx+','+cy]={score:score,tradeAccess:access,driverAccess:drivers>0,service:service,water:water,hazard:hazard};wellTotal+=score;occupied++;if(water)waterCount++;if(hazard)weatherStress++;if(score>=72)thriving++;
       });
     }
-    return {tiles:tiles,places:places,civic:civic,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving};
+    return {tiles:tiles,places:places,civic:civic,food:food,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving,waterCount:waterCount,weatherStress:weatherStress};
   }
   function stats(){
-    var stones=[0,0],pop=[0,0],life={businesses:0,farmers:0,bicyclists:0,herders:0},community=communityData();
+    var stones=[0,0],pop=[0,0],effort=[0,0],depots=0,life={businesses:0,farmers:0,bicyclists:0,herders:0},community=communityData(),roadLinks=ruralRoadLinks();
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){var v=board[y][x];if(v){
-      stones[v.player]++;pop[v.player]+=v.pop;
+      var homestead=isIsolatedHouse(x,y),depot=isDepot(x,y);stones[v.player]++;pop[v.player]+=v.pop;effort[v.player]+=v.pop+v.age*2+(waterAccessAt(x,y)?3:0)+(homestead?2:0)+(depot?3:0)+(community.tiles[x+','+y]&&community.tiles[x+','+y].score>=72?2:0);if(depot)depots++;
       if(isShop(v)&&!community.civic.map[x+','+y])life.businesses++;
       if(terrain[y][x]==='field')life.farmers+=1+Math.floor(v.age/2);
       if(terrain[y][x]==='pasture')life.herders+=1+Math.floor(v.age/3);
     }}
     var terr=territoryData();life.bicyclists=community.economy.bicyclists;
-    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,economy:community.economy,wellness:community.average,thriving:community.thriving,railGoods:trainGoods,trainRuns:trainRuns,score:[stones[0]*2+terr.count[0]+captures[0]*2,stones[1]*2+terr.count[1]+captures[1]*2]};
+    var score=[effort[0]+terr.count[0]+captures[0],effort[1]+terr.count[1]+captures[1]];
+    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,food:community.food,economy:community.economy,wellness:community.average,thriving:community.thriving,waterCount:community.waterCount,weatherStress:community.weatherStress,railGoods:trainGoods,railGoodsByPlayer:trainGoodsByPlayer,depotGoods:depotGoods,depots:depots,ruralRoads:roadLinks.length,trainRuns:trainRuns,score:score,sharedEffort:score[0]+score[1]};
   }
   function updateUI(){
-    var s=stats(), sea=seasons[seasonIndex]; document.getElementById('score0').textContent=s.score[0];document.getElementById('score1').textContent=s.score[1];
-    document.getElementById('turnLabel').textContent=cpuThinking?'HARBOR IS THINKING…':name(turn).toUpperCase()+"'S TURN"; document.getElementById('pass').disabled=turn!==0||cpuThinking; document.getElementById('season').textContent=sea.name;
+    var s=stats(), sea=seasons[seasonIndex]; document.getElementById('score0').textContent=s.score[0];document.getElementById('score1').textContent=s.score[1];document.getElementById('sharedEffort').textContent=s.sharedEffort;
+    document.getElementById('turnLabel').textContent=cpuThinking?'HARBOR IS THINKING…':name(turn).toUpperCase()+' BUILDS'; document.getElementById('pass').disabled=turn!==0||cpuThinking; document.getElementById('season').textContent=sea.name;
     document.getElementById('weather').textContent=sea.weather+' · growth +'+sea.growth; document.getElementById('year').textContent='YEAR '+year;
     var freightTurns=6-(moves%6);document.getElementById('trainClock').textContent='WEEK '+(trainRuns+1)+' · TRAIN IN '+freightTurns;
     document.getElementById('population').textContent=s.pop[0]+s.pop[1];document.getElementById('territory').textContent=s.terr.count[0]+s.terr.count[1];document.getElementById('moves').textContent= s.stones[0]+s.stones[1];document.getElementById('captures').textContent=captures[0]+captures[1];
@@ -410,6 +535,9 @@
     document.getElementById('commerce').textContent=s.economy.trade;document.getElementById('deliveries').textContent=s.economy.deliveries;document.getElementById('walkins').textContent=s.economy.walkins;document.getElementById('drivers').textContent=s.economy.drivers;
     document.getElementById('railGoods').textContent=s.railGoods;document.getElementById('trainRuns').textContent=s.trainRuns;
     document.getElementById('wellness').textContent=s.stones[0]+s.stones[1]?s.wellness+'%':'—';document.getElementById('thriving').textContent=s.thriving;
+    document.getElementById('waterAccess').textContent=s.waterCount;document.getElementById('weatherStress').textContent=s.weatherStress;document.getElementById('harvest').textContent=foodHarvest;document.getElementById('foodSales').textContent=foodSales;document.getElementById('farmersMarkets').textContent=s.food.markets;document.getElementById('agencies').textContent=s.food.agencies;
+    document.getElementById('homesteads').textContent=s.food.homesteads;document.getElementById('ruralRoads').textContent=s.ruralRoads;document.getElementById('depots').textContent=s.depots;document.getElementById('depotGoods').textContent=s.depotGoods;
+    document.getElementById('humanSignal').textContent=humanSignal;document.getElementById('cpuSignal').textContent=cpuSignal;
     var tr=document.getElementById('seasonTrack');tr.innerHTML='';var phase=moves%6;for(var i=0;i<6;i++){var el=document.createElement('i');if(i<phase)el.className='on';tr.appendChild(el);}
     var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});
   }
@@ -436,6 +564,14 @@
       grove:['#50764e','#785d3e','#909f93'], wetland:['#5e9184','#6f8061','#9caaa5'], ridge:['#7d8469','#806e57','#aab0a8']
     }; return palette[kind][seasonIndex===2?1:seasonIndex===3?2:0];
   }
+  function drawClimateTile(x,y,gx,gy){
+    var hazard=hazardAt(gx,gy);if(hazard==='flood'){
+      poly([[x-12,y],[x,y-5],[x+12,y],[x,y+5]],'rgba(70,145,160,.68)','rgba(202,235,225,.65)');
+      detailLine(x-8,y-1,x-2,y+1,'rgba(225,245,235,.7)',1);detailLine(x+2,y-2,x+9,y,'rgba(225,245,235,.7)',1);
+    }else if(hazard==='drought'){
+      detailLine(x-8,y-2,x-2,y+2,'#765235',1);detailLine(x-2,y+2,x+2,y-1,'#765235',1);detailLine(x+4,y+3,x+10,y-2,'#765235',1);
+    }
+  }
   function drawIsland(sea){
     var a=isoFlat(0,0),b=isoFlat(N-1,0),c=isoFlat(N-1,N-1),d=isoFlat(0,N-1);
     poly([[a.x,a.y+6],[b.x,b.y+6],[c.x,c.y+6],[d.x,d.y+6],[d.x,d.y+35],[c.x,c.y+35],[b.x,b.y+35],[a.x,a.y+35]],sea.edge);
@@ -446,7 +582,7 @@
       poly([[p.x-TW/2,p.y],[p.x,p.y+TH/2],[p.x,p.y+TH/2+depth],[p.x-TW/2,p.y+depth]],sea.edge);
       poly([[p.x+TW/2,p.y],[p.x,p.y+TH/2],[p.x,p.y+TH/2+depth],[p.x+TW/2,p.y+depth]],'#445a4d');
       poly([[p.x,p.y-TH/2],[p.x+TW/2,p.y],[p.x,p.y+TH/2],[p.x-TW/2,p.y]],terrainColor(kind,sea),'rgba(31,57,48,.38)');
-      drawTerrainDetail(p.x,p.y,kind,t.x,t.y,sea);
+      drawTerrainDetail(p.x,p.y,kind,t.x,t.y,sea);drawClimateTile(p.x,p.y,t.x,t.y);
     });
   }
   function railRoute(){return [[360,110],[608,229],[360,348],[112,229]];}
@@ -559,6 +695,26 @@
     for(var i=0;i<4;i++)rect(x-9+i*5,y-9,4,4,i%2?c:'#fff3d1');rect(x-7,y-4,6,4,'#d9e3bd');rect(x+3,y-5,4,5,'#49362f');
     rect(x+8,y-3,4,3,'#a66b35');rect(x+9,y-4,2,1,'#f0d17a');
   }
+  function drawWaterAccess(x,y){
+    rect(x-13,y-4,5,5,'#d9cc9e');rect(x-12,y-6,3,2,'#d9cc9e');rect(x-12,y-3,3,3,'#3f8f9b');rect(x-11,y-8,1,2,'#bce6df');
+  }
+  function drawCommerceSite(x,y,type,v){
+    if(type==='market'){
+      rect(x-16,y-7,11,6,'#805331');for(var i=0;i<3;i++)rect(x-16+i*4,y-12,3,5,i%2?'#f1d076':v.player===0?'#d85b3e':'#3d9693');rect(x-15,y-1,2,4,'#4c3a2e');rect(x-7,y-1,2,4,'#4c3a2e');
+    }else if(type==='agency'){
+      rect(x+10,y-20,2,18,'#4c4338');rect(x+7,y-24,10,7,v.player===0?'#c85b3d':'#357f82');rect(x+9,y-22,6,1,'#f6dfa1');rect(x+10,y-20,4,1,'#f6dfa1');
+    }
+  }
+  function drawHomestead(x,y,v){
+    var crop=seasonIndex===3?'#dce3d8':seasonIndex===2?'#c99049':'#c9bd58';
+    for(var i=0;i<3;i++){detailLine(x-16+i*4,y+2,x-10+i*4,y+5,crop,1);rect(x-16+i*4,y+1,1,2,'#6f7d42');}
+    rect(x+10,y+1,6,4,v.player===0?'#b97143':'#5c8f88');rect(x+11,y,4,1,'#ead38c');
+  }
+  function drawDepot(x,y,v){
+    var accent=v.player===0?'#d07843':'#55a29d';rect(x-18,y+3,36,3,'#564737');rect(x-16,y,31,2,'#c6ad77');
+    rect(x+8,y-14,2,14,'#4a4136');rect(x+4,y-18,12,5,accent);rect(x+6,y-16,8,1,'#f3dea1');
+    rect(x-16,y-4,6,5,'#9b6237');rect(x-15,y-5,4,1,'#e2bc70');rect(x-8,y-3,5,4,'#bb7b40');
+  }
   function drawPerson(x,y,shirt,hat){
     rect(x-2,y-10,4,4,hat||'#dfbd75');rect(x-3,y-6,6,5,shirt);rect(x-2,y-1,2,4,'#40352f');rect(x+1,y-1,2,4,'#40352f');
   }
@@ -570,11 +726,12 @@
   }
   function drawHerd(x,y,v){drawCow(x-9,y+4,false);drawCow(x+7,y+1,true);drawPerson(x+16,y+4,v.player===0?'#a94036':'#276f72','#6c4d35');}
   function drawRoads(){
-    var links=[];
+    var links=[],rural=ruralRoadLinks();
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){var v=board[y][x];if(!v)continue;
       [[x+1,y],[x,y+1]].forEach(function(n){if(n[0]<N&&n[1]<N){var q=board[n[1]][n[0]];if(q&&q.player===v.player)links.push([iso(x,y),iso(n[0],n[1]),v.player]);}});
     }
     ctx.lineCap='butt';
+    rural.forEach(function(link){var a=iso(link.a[0],link.a[1]),b=iso(link.b[0],link.b[1]);ctx.strokeStyle='rgba(67,51,35,.55)';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(a.x,a.y+3);ctx.lineTo(b.x,b.y+3);ctx.stroke();ctx.strokeStyle=link.player===0?'#a98250':'#ae976a';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='rgba(239,217,158,.55)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.stroke();ctx.setLineDash([]);});
     links.forEach(function(l){ctx.strokeStyle='rgba(44,48,42,.55)';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(l[0].x,l[0].y+3);ctx.lineTo(l[1].x,l[1].y+3);ctx.stroke();});
     links.forEach(function(l){ctx.strokeStyle=l[2]===0?'#c8a56d':'#d2bf91';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(l[0].x,l[0].y+2);ctx.lineTo(l[1].x,l[1].y+2);ctx.stroke();});
     links.forEach(function(l){ctx.strokeStyle='rgba(255,239,184,.5)';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(l[0].x,l[0].y+1);ctx.lineTo(l[1].x,l[1].y+1);ctx.stroke();ctx.setLineDash([]);});
@@ -613,16 +770,16 @@
   }
   function drawBoard(sea){
     drawIsland(sea); drawRailway(); drawRoads();
-    var pulse=communityData(),places=pulse.places,civic=pulse.civic,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
+    var pulse=communityData(),places=pulse.places,civic=pulse.civic,food=pulse.food,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
     items.sort(function(a,b){return a.p.y-b.p.y;});
-    items.forEach(function(it){var v=board[it.y][it.x],p=it.p,land=terrain[it.y][it.x],place=places.map[it.x+','+it.y],service=civic.map[it.x+','+it.y];if(v){
-      drawPlaceGround(p.x,p.y,place,v);drawWellnessGarden(p.x,p.y,pulse.tiles[it.x+','+it.y],v.seed);
+    items.forEach(function(it){var v=board[it.y][it.x],p=it.p,land=terrain[it.y][it.x],place=places.map[it.x+','+it.y],service=civic.map[it.x+','+it.y],foodSite=food.map[it.x+','+it.y];if(v){
+      drawPlaceGround(p.x,p.y,place,v);drawWellnessGarden(p.x,p.y,pulse.tiles[it.x+','+it.y],v.seed);if(waterAccessAt(it.x,it.y))drawWaterAccess(p.x,p.y);if(isIsolatedHouse(it.x,it.y))drawHomestead(p.x,p.y,v);
       if(!service&&(land==='grove'||(it.x+it.y+v.seed)%5===0))drawTree(p.x-14,p.y-2,v.seed,sea);
       rect(p.x-12,p.y+5,24,5,'rgba(25,40,36,.28)');if(service)drawCivicBuilding(p.x,p.y+3,service,v);else drawBuilding(p.x,p.y+3,v);
       if(!service&&isShop(v))drawShopfront(p.x,p.y+3,v);
       if(!service&&land==='field')drawFarm(p.x,p.y,v);
       if(!service&&land==='pasture')drawHerd(p.x,p.y,v);
-      drawPlaceMarker(p.x,p.y,place,v);
+      drawPlaceMarker(p.x,p.y,place,v);if(foodSite)drawCommerceSite(p.x,p.y,foodSite,v);if(isDepot(it.x,it.y))drawDepot(p.x,p.y,v);
     } else {
       var near=neighbors(it.x,it.y).some(function(n){return !!board[n[1]][n[0]];}); if(near&&rng(valleySeed+it.x*20+it.y*7+seasonIndex)>.68){var col=seasonIndex===3?'#e8eee7':seasonIndex===2?'#c2753c':'#d7cf69';rect(p.x-1,p.y-4,2,4,col);}
     }});
@@ -630,7 +787,8 @@
     var cp=iso(cursor.x,cursor.y); if(!board[cursor.y][cursor.x]){ctx.strokeStyle=turn===0?'#ffe184':'#b7ffff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cp.x,cp.y-7);ctx.lineTo(cp.x+13,cp.y);ctx.lineTo(cp.x,cp.y+7);ctx.lineTo(cp.x-13,cp.y);ctx.closePath();ctx.stroke();}
   }
   function drawWeather(sea,dt){
-    tick+=dt; if(seasonIndex===0||seasonIndex===1){if(particles.length<70)for(var i=0;i<4;i++)particles.push({x:rng(tick+i)*720,y:-8-rng(tick+i+20)*80,s:1+rng(tick+i+4)*2});ctx.strokeStyle=seasonIndex===0?'rgba(190,225,224,.55)':'rgba(235,243,204,.35)';particles.forEach(function(p){p.x-=p.s*.4;p.y+=p.s*2.5;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-3,p.y+7);ctx.stroke();});particles=particles.filter(function(p){return p.y<540;});}
+    tick+=dt; if(seasonIndex===0){if(particles.length<90)for(var i=0;i<5;i++)particles.push({x:rng(tick+i)*720,y:-8-rng(tick+i+20)*80,s:1+rng(tick+i+4)*2});ctx.strokeStyle='rgba(190,225,224,.62)';particles.forEach(function(p){p.x-=p.s*.4;p.y+=p.s*2.8;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-3,p.y+8);ctx.stroke();});particles=particles.filter(function(p){return p.y<540;});}
+    else if(seasonIndex===1){if(particles.length<24)for(var h=0;h<2;h++)particles.push({x:-10,y:230+rng(tick+h)*230,s:1+rng(tick+h+7)*2});particles.forEach(function(p){p.x+=p.s*1.2;p.y+=Math.sin((p.x+tick)/18)*.2;rect(p.x,p.y,4,1,'rgba(220,185,105,.48)');});particles=particles.filter(function(p){return p.x<730;});}
     else if(seasonIndex===3){if(particles.length<65)for(var j=0;j<3;j++)particles.push({x:rng(tick+j)*720,y:-5-rng(tick+j+8)*60,s:1+rng(tick+j+2)*2});ctx.fillStyle='rgba(245,248,239,.82)';particles.forEach(function(p){p.x+=Math.sin((p.y+tick)/20)*.5;p.y+=p.s*.5;rect(p.x,p.y,p.s+1,p.s+1,ctx.fillStyle);});particles=particles.filter(function(p){return p.y<540;});}
     else {if(particles.length<35)for(var k=0;k<2;k++)particles.push({x:-10,y:170+rng(tick+k)*250,s:1+rng(tick+k+12)*2});particles.forEach(function(p){p.x+=p.s*1.4;p.y+=Math.sin((p.x+tick)/24)*.25;rect(p.x,p.y,3,2,'rgba(215,127,59,.7)');});particles=particles.filter(function(p){return p.x<730;});}
   }
