@@ -76,6 +76,13 @@
     .life-item:nth-last-child(-n+2) { border-bottom:0; }
     .life-item b { color:var(--sun); font-size:13px; }
     .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .audio-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+    .audio-head .life-title { border:0; padding:0; }
+    .audio-status { color:var(--muted); font-size:8px; letter-spacing:.05em; text-transform:uppercase; }
+    .sound-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .sound-controls button { min-height:36px; border:1px solid var(--edge); background:transparent; color:var(--ink); padding:6px; cursor:pointer; font-size:10px; font-weight:bold; }
+    .sound-controls button[aria-pressed="true"] { background:var(--button); color:var(--button-ink); border-color:var(--ink); }
+    .sound-note { margin:8px 0 0; color:var(--muted); font-size:9px; line-height:1.35; }
     .actions button, .rule-button {
       min-height:42px; border:2px solid var(--ink); background:var(--button); color:var(--button-ink); padding:8px 10px; font-weight:bold; cursor:pointer; box-shadow:3px 3px 0 var(--shadow);
     }
@@ -202,6 +209,14 @@
         <p class="signal"><b>Harbor:</b> <span id="cpuSignal">The other mayor studies the valley in silence.</span></p>
       </div>
     </section>
+    <section class="panel audio-panel" aria-label="Soundscape controls">
+      <div class="audio-head"><h3 class="life-title">Valley soundscape</h3><span class="audio-status" id="audioStatus">tap to start</span></div>
+      <div class="sound-controls">
+        <button id="soundToggle" type="button" aria-pressed="false">Start sound</button>
+        <button id="musicToggle" type="button" aria-pressed="true">Music on</button>
+      </div>
+      <p class="sound-note">16-bit rain, wind, storms and floodwater · original pastoral lo-fi</p>
+    </section>
     <section class="actions">
       <button id="pass">Pass season</button><button class="new" id="newGame">New valley</button>
     </section>
@@ -238,6 +253,7 @@
     {name:'Winter', weather:'First snow', growth:0, sky:['#667986','#c7d0ce'], ground:'#b6c2b3', edge:'#697a73', accent:'#e9f0e8'}
   ];
   var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainGoodsByPlayer, depotGoods, trainRuns, lastTrainMove, trainStartedAt, climate, foodStocks, foodHarvest, foodSales, humanSignal, cpuSignal, cpuThinking=false, cpuTimer=null, worldAngle=0;
+  var audioCtx=null,masterGain=null,musicGain=null,fxGain=null,audioStarted=false,audioEnabled=true,musicEnabled=true,weatherNodes=[],musicTimer=null,musicStep=0,musicNext=0,stormTimer=null;
   var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reviewMode=location.search.indexOf('architecture-review=1')!==-1, reviewArt={};
   function setupArchitectureReview(){
@@ -246,6 +262,81 @@
     var harbor=[[11,3],[14,3],[17,3],[11,8],[14,8],[17,8],[11,13],[14,13],[17,13],[11,18],[14,18],[17,18]];
     [hearth,harbor].forEach(function(points,player){points.forEach(function(c,i){board[c[1]][c[0]]={player:player,age:6,pop:18,bornWeek:-2,bornMove:-99,seed:i+player*13};reviewArt[c[0]+','+c[1]]=types[i];elevation[c[1]][c[0]]=0;terrain[c[1]][c[0]]=i===2||i===8?'field':i===4?'pasture':i===1?'ridge':'meadow';});});
     moves=24;seasonIndex=1;year=3;trainRuns=2;climate={flooded:{},drought:{},floodCount:0,droughtCount:0};
+  }
+  function updateAudioUI(){
+    var sound=document.getElementById('soundToggle'),music=document.getElementById('musicToggle'),status=document.getElementById('audioStatus');
+    if(!sound||!music||!status)return;
+    sound.setAttribute('aria-pressed',String(audioStarted&&audioEnabled));sound.textContent=!audioStarted?'Start sound':audioEnabled?'Sound on':'Sound off';
+    music.setAttribute('aria-pressed',String(musicEnabled));music.textContent=musicEnabled?'Music on':'Music off';
+    status.textContent=!audioStarted?'tap to start':!audioEnabled?'muted':musicEnabled?'weather + lo-fi':'weather only';
+  }
+  function audioTone(freq,when,duration,level,type,bus,cutoff){
+    if(!audioCtx||!audioEnabled)return null;
+    var osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),target=bus||fxGain,node=osc;
+    osc.type=type||'square';osc.frequency.setValueAtTime(Math.max(20,freq),when);
+    if(cutoff){var filter=audioCtx.createBiquadFilter();filter.type='lowpass';filter.frequency.setValueAtTime(cutoff,when);osc.connect(filter);node=filter;}
+    node.connect(gain);gain.connect(target);gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,level),when+.018);gain.gain.exponentialRampToValueAtTime(.0001,when+duration);
+    osc.start(when);osc.stop(when+duration+.03);return osc;
+  }
+  function audioNoise(duration,when,level,filterType,frequency,bus,attack){
+    if(!audioCtx||!audioEnabled)return null;
+    var length=Math.max(1,Math.floor(audioCtx.sampleRate*duration)),buffer=audioCtx.createBuffer(1,length,audioCtx.sampleRate),data=buffer.getChannelData(0),held=0;
+    for(var i=0;i<length;i++){if(i%4===0)held=Math.round((Math.random()*2-1)*24)/24;data[i]=held;}
+    var source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();source.buffer=buffer;filter.type=filterType||'lowpass';filter.frequency.value=frequency||600;filter.Q.value=.8;source.connect(filter);filter.connect(gain);gain.connect(bus||fxGain);
+    gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,level),when+(attack||.025));gain.gain.exponentialRampToValueAtTime(.0001,when+duration);source.start(when);source.stop(when+duration+.03);return source;
+  }
+  function stopWeather(){
+    clearTimeout(stormTimer);stormTimer=null;weatherNodes.forEach(function(entry){try{entry.source.stop();}catch(e){}try{entry.lfo&&entry.lfo.stop();}catch(e){}});weatherNodes=[];
+  }
+  function weatherLoop(filterType,frequency,level,lfoRate){
+    var seconds=2,length=Math.floor(audioCtx.sampleRate*seconds),buffer=audioCtx.createBuffer(1,length,audioCtx.sampleRate),data=buffer.getChannelData(0),held=0;
+    for(var i=0;i<length;i++){if(i%5===0)held=Math.round((Math.random()*2-1)*20)/20;data[i]=held;}
+    var source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain(),lfo=null,lfoGain=null;source.buffer=buffer;source.loop=true;filter.type=filterType;filter.frequency.value=frequency;filter.Q.value=.65;gain.gain.value=level;source.connect(filter);filter.connect(gain);gain.connect(fxGain);
+    if(lfoRate){lfo=audioCtx.createOscillator();lfoGain=audioCtx.createGain();lfo.frequency.value=lfoRate;lfoGain.gain.value=level*.42;lfo.connect(lfoGain);lfoGain.connect(gain.gain);lfo.start();}
+    source.start();weatherNodes.push({source:source,lfo:lfo});
+  }
+  function playFloodSwell(){
+    if(!audioCtx||!audioEnabled)return;var t=audioCtx.currentTime+.03;audioNoise(2.4,t,.085,'lowpass',430,fxGain,.32);
+    [0,.34,.78,1.22].forEach(function(d,i){audioTone(150+i*22,t+d,.18,.022,'triangle',fxGain,520);});
+  }
+  function playStorm(){
+    if(!audioCtx||!audioEnabled||seasonIndex!==0)return;var t=audioCtx.currentTime+.03,crack=audioTone(940,t,.19,.09,'square',fxGain,1700);if(crack)crack.frequency.exponentialRampToValueAtTime(150,t+.18);
+    audioNoise(.12,t,.11,'highpass',2100,fxGain,.005);audioNoise(1.9,t+.2,.14,'lowpass',260,fxGain,.06);
+  }
+  function queueStorm(){
+    clearTimeout(stormTimer);if(!audioStarted||!audioEnabled||seasonIndex!==0)return;
+    stormTimer=setTimeout(function(){playStorm();queueStorm();},6500+Math.random()*7000);
+  }
+  function startWeather(){
+    if(!audioCtx||!audioEnabled)return;stopWeather();
+    if(seasonIndex===0){weatherLoop('highpass',1700,.055,.17);if(climate&&climate.floodCount){weatherLoop('lowpass',380,.025,.11);playFloodSwell();}queueStorm();}
+    else if(seasonIndex===2){weatherLoop('bandpass',620,.055,.13);}
+    else if(seasonIndex===1){weatherLoop('bandpass',880,.024,.09);}
+    else {weatherLoop('bandpass',510,.035,.08);}
+  }
+  function musicNote(midi,when,duration,level,type,cutoff){return audioTone(440*Math.pow(2,(midi-69)/12),when,duration,level,type,musicGain,cutoff);}
+  function scheduleMusic(){
+    if(!audioCtx)return;var beat=60/74/2,progression=[[48,55,59,64],[45,52,55,59],[50,57,60,64],[43,50,55,59]];
+    if(musicNext<audioCtx.currentTime-1)musicNext=audioCtx.currentTime+.06;
+    while(musicNext<audioCtx.currentTime+.3){var chord=progression[Math.floor(musicStep/8)%progression.length],slot=musicStep%8,note=chord[[0,2,1,3,2,1,3,1][slot]]+12;
+      musicNote(note,musicNext,beat*.8,.026,'triangle',1250);if(slot%2===0)musicNote(chord[slot===4?2:0]-12,musicNext,beat*1.7,.032,'sine',420);
+      if(slot===2||slot===6)audioNoise(.045,musicNext,.014,'highpass',2800,musicGain,.004);
+      musicStep++;musicNext+=beat;
+    }
+  }
+  function startAudio(){
+    if(audioStarted){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();return;}
+    var AC=window.AudioContext||window.webkitAudioContext;if(!AC){document.getElementById('audioStatus').textContent='not supported';return;}
+    audioCtx=new AC();masterGain=audioCtx.createGain();musicGain=audioCtx.createGain();fxGain=audioCtx.createGain();masterGain.gain.value=.72;musicGain.gain.value=musicEnabled ? .7 : 0;fxGain.gain.value=.78;musicGain.connect(masterGain);fxGain.connect(masterGain);masterGain.connect(audioCtx.destination);audioStarted=true;musicNext=audioCtx.currentTime+.08;musicTimer=setInterval(scheduleMusic,60);scheduleMusic();startWeather();updateAudioUI();
+  }
+  function toggleSound(){
+    if(!audioStarted){audioEnabled=true;startAudio();return;}audioEnabled=!audioEnabled;masterGain.gain.setTargetAtTime(audioEnabled ? .72 : .0001,audioCtx.currentTime,.035);if(audioEnabled){audioCtx.resume();startWeather();}else stopWeather();updateAudioUI();
+  }
+  function toggleMusic(){
+    musicEnabled=!musicEnabled;if(audioCtx)musicGain.gain.setTargetAtTime(musicEnabled ? .7 : .0001,audioCtx.currentTime,.05);updateAudioUI();
+  }
+  function playBuildChime(player){
+    if(!audioCtx||!audioEnabled)return;var t=audioCtx.currentTime+.01,root=player===0?523.25:587.33;audioTone(root,t,.12,.045,'square',fxGain,1500);audioTone(root*1.5,t+.07,.18,.035,'triangle',fxGain,1200);
   }
   function makeTerrain(){
     var rows=[]; elevation=[];
@@ -290,6 +381,7 @@
     turn=0; moves=0; seasonIndex=0; year=1; captures=[0,0]; log=[]; cursor={x:Math.floor(N/2),y:Math.floor(N/2)}; particles=[]; tick=0; lastTime=performance.now();
     trainGoods=0; trainGoodsByPlayer=[0,0]; depotGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;foodStocks={};foodHarvest=0;foodSales=0;
     humanSignal='You can place, but Harbor only sees the result.';cpuSignal='The other mayor studies the valley in silence.';refreshClimate();
+    if(audioStarted&&audioEnabled)startWeather();
     if(reviewMode)setupArchitectureReview();
     addLog(climate.floodCount+' low plots are under the spring flood watch.');
     addLog('Two mayors begin one valley without sharing their full plans.');
@@ -365,10 +457,10 @@
     else addLog(name(p)+' invested effort at '+coord(x,y)+'.');
     var rush=rapidClusterAt(x,y);if(rush)addLog('Rapid urbanization: '+name(p)+' packed '+rush.count+' new homes together; wellbeing and effort are heavily strained.');
     if(p===0)humanSignal=describeIntent(x,y);else cpuSignal=describeIntent(x,y);
-    moves++; advanceIfNeeded(); turn=1-p; cursor={x:x,y:y}; updateUI();
+    playBuildChime(p);moves++; advanceIfNeeded(); turn=1-p; cursor={x:x,y:y}; updateUI();
   }
   function humanPlace(x,y){
-    if(turn!==0||cpuThinking)return;
+    startAudio();if(turn!==0||cpuThinking)return;
     var result=makeMove(x,y,0);
     if(!result.ok){say(result.reason==='occupied'?'That plot is already settled.':'A community needs one open path.');return;}
     finishMove(x,y,0,result.taken); scheduleCPU();
@@ -398,11 +490,11 @@
     },520);
   }
   function humanPass(){
-    if(turn!==0||cpuThinking)return;humanSignal='Hearth conserves effort; Harbor can only guess why.'; addLog('Hearth watched the weather and conserved effort.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
+    startAudio();if(turn!==0||cpuThinking)return;humanSignal='Hearth conserves effort; Harbor can only guess why.'; addLog('Hearth watched the weather and conserved effort.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
   }
   function advanceIfNeeded(){ if(moves>0&&moves%6===0){
     var freight=runTrainDelivery();
-    seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}refreshClimate();
+    seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}refreshClimate();if(audioStarted&&audioEnabled)startWeather();
     var report=grow(); addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
     if(freight.bonus)addLog(freight.depots+' trackside depot'+(freight.depots===1?'':'s')+' routed '+freight.bonus+' bonus goods through rural communities.');
     addLog(seasons[seasonIndex].name+' arrived: '+seasons[seasonIndex].weather.toLowerCase()+'.');
@@ -571,7 +663,7 @@
     document.getElementById('homesteads').textContent=s.food.homesteads;document.getElementById('ruralRoads').textContent=s.ruralRoads;document.getElementById('depots').textContent=s.depots;document.getElementById('depotGoods').textContent=s.depotGoods;
     document.getElementById('humanSignal').textContent=humanSignal;document.getElementById('cpuSignal').textContent=cpuSignal;
     var tr=document.getElementById('seasonTrack');tr.innerHTML='';var phase=moves%6;for(var i=0;i<6;i++){var el=document.createElement('i');if(i<phase)el.className='on';tr.appendChild(el);}
-    var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});
+    var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});updateAudioUI();
   }
   function addLog(t){log.unshift(t);if(log.length>20)log.pop();}
   function say(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(say.timer);say.timer=setTimeout(function(){el.classList.remove('show');},1500);}
@@ -917,7 +1009,9 @@
   canvas.addEventListener('pointerdown',function(e){var c=eventCell(e);if(c.x>=0&&c.x<N&&c.y>=0&&c.y<N){cursor=c;humanPlace(c.x,c.y);}});
   canvas.addEventListener('keydown',function(e){var used=true;if(e.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-1);else if(e.key==='ArrowRight')cursor.x=Math.min(N-1,cursor.x+1);else if(e.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-1);else if(e.key==='ArrowDown')cursor.y=Math.min(N-1,cursor.y+1);else if(e.key==='Enter'||e.key===' ')humanPlace(cursor.x,cursor.y);else used=false;if(used)e.preventDefault();});
   document.getElementById('pass').addEventListener('click',humanPass);
-  document.getElementById('newGame').addEventListener('click',function(){reset();say('The terrain reshapes into a fresh valley.');});
+  document.getElementById('newGame').addEventListener('click',function(){startAudio();reset();say('The terrain reshapes into a fresh valley.');});
+  document.getElementById('soundToggle').addEventListener('click',toggleSound);
+  document.getElementById('musicToggle').addEventListener('click',function(){startAudio();toggleMusic();});
   document.getElementById('rulesToggle').addEventListener('click',function(){var box=document.getElementById('rules'),open=!box.classList.contains('open');box.classList.toggle('open',open);this.setAttribute('aria-expanded',String(open));this.textContent='How the valley grows '+(open?'−':'+');});
   document.addEventListener('keydown',function(e){if(e.altKey&&e.shiftKey&&e.key.toLowerCase()==='a'){reviewMode=true;reviewArt={};reset();e.preventDefault();}});
   reset();requestAnimationFrame(render);
