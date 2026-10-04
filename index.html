@@ -50,6 +50,7 @@
     }
     canvas { width:100%; height:auto; aspect-ratio:4/3; display:block; image-rendering:pixelated; image-rendering:crisp-edges; background:#6e9a9b; outline:none; cursor:crosshair; }
     canvas:focus-visible { box-shadow:inset 0 0 0 4px var(--focus); }
+    #labels { position:absolute; inset:5px; width:calc(100% - 10px); height:auto; pointer-events:none; background:transparent; cursor:default; }
     .film { position:absolute; inset:5px; pointer-events:none; background:repeating-linear-gradient(0deg,transparent 0 3px,#0710140c 3px 4px); mix-blend-mode:multiply; }
     .toast { position:absolute; left:50%; top:14px; transform:translateX(-50%); background:#192426e8; color:#fff8d8; border:2px solid #e1ce92; padding:7px 10px; font-weight:bold; font-size:11px; opacity:0; transition:opacity .15s; pointer-events:none; white-space:nowrap; }
     .toast.show { opacity:1; }
@@ -111,6 +112,7 @@
       aside { grid-template-columns:1fr; }
       .panel.log-panel { grid-column:auto; }
       .viewport { padding:3px; border-width:2px; }
+      #labels { inset:3px; width:calc(100% - 6px); }
       .film { inset:3px; }
     }
     @keyframes quake-jolt { 0%,100%{transform:translate(0,0)} 12%{transform:translate(-4px,2px)} 28%{transform:translate(4px,-2px)} 46%{transform:translate(-3px,-1px)} 64%{transform:translate(3px,2px)} 82%{transform:translate(-1px,1px)} }
@@ -127,7 +129,8 @@
       <div class="faction"><div><span class="label">CPU · Mayor of Harbor</span><span class="score" id="score1">0</span></div><span class="stone harbor"></span></div>
     </div>
     <div class="viewport">
-      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A high-detail twenty by twenty isometric valley with steep physical hills, where two mayors build neighboring communities through weather, earthquakes, water access, boat cargo, farms, culture, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
+      <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A native WebGL twenty by twenty isometric valley with steep physical hills, where two mayors build neighboring communities through weather, earthquakes, water access, boat cargo, farms, culture, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
+      <canvas id="labels" width="1440" height="1080" aria-hidden="true"></canvas>
       <div class="film"></div><div class="toast" id="toast"></div>
     </div>
     <p class="mobile-hint">Tap a glowing plot to settle it. The whole twenty-by-twenty valley fits.</p>
@@ -276,9 +279,55 @@
 (function(){
   'use strict';
   var N=20, TW=28, TH=14, ORGX=360, ORGY=96, RENDER_SCALE=2, VIEW_W=720, VIEW_H=540;
-  var canvas=document.getElementById('board'), ctx=canvas.getContext('2d');
-  ctx.setTransform(RENDER_SCALE,0,0,RENDER_SCALE,0,0);
-  ctx.imageSmoothingEnabled=false;
+  var canvas=document.getElementById('board'), labelCanvas=document.getElementById('labels'), labelCtx=labelCanvas.getContext('2d');
+  function WebGLCanvas2D(target){
+    var gl=target.getContext('webgl2',{alpha:false,antialias:false,depth:false,preserveDrawingBuffer:false})||target.getContext('webgl',{alpha:false,antialias:false,depth:false,preserveDrawingBuffer:false});
+    if(!gl)throw new Error('Native WebGL is required to render the valley.');
+    var vertexSource='attribute vec2 a_pos;attribute vec4 a_color;varying vec4 v_color;void main(){vec2 p=a_pos/vec2(720.0,540.0)*2.0-1.0;gl_Position=vec4(p.x,-p.y,0.0,1.0);v_color=a_color;}';
+    var fragmentSource='precision mediump float;varying vec4 v_color;void main(){gl_FragColor=v_color;}';
+    function shader(type,source){var s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+    var program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertexSource));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragmentSource));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));
+    gl.useProgram(program);var buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);var pos=gl.getAttribLocation(program,'a_pos'),color=gl.getAttribLocation(program,'a_color');gl.enableVertexAttribArray(pos);gl.enableVertexAttribArray(color);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,24,0);gl.vertexAttribPointer(color,4,gl.FLOAT,false,24,8);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    var data=new Float32Array(2400000),count=0,colorCache={},path=[],current=null,transform=[1,0,0,1,0,0],stack=[];
+    function parsed(style){
+      if(style&&style.__gradient)return style;
+      if(colorCache[style])return colorCache[style];
+      var r=0,g=0,b=0,a=1,m,s=String(style||'#000').trim();
+      if(s.charAt(0)==='#'){var h=s.slice(1);if(h.length===3||h.length===4){r=parseInt(h[0]+h[0],16);g=parseInt(h[1]+h[1],16);b=parseInt(h[2]+h[2],16);if(h.length===4)a=parseInt(h[3]+h[3],16)/255;}else{r=parseInt(h.slice(0,2),16);g=parseInt(h.slice(2,4),16);b=parseInt(h.slice(4,6),16);if(h.length>=8)a=parseInt(h.slice(6,8),16)/255;}}
+      else if((m=s.match(/rgba?\(([^)]+)\)/i))){var q=m[1].split(',');r=parseFloat(q[0]);g=parseFloat(q[1]);b=parseFloat(q[2]);if(q.length>3)a=parseFloat(q[3]);}
+      var out=[r/255,g/255,b/255,isFinite(a)?a:1];colorCache[style]=out;return out;
+    }
+    function mixColor(a,b,t){return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t,a[3]+(b[3]-a[3])*t];}
+    function gradientColor(g,x,y){var den=(g.x2-g.x1)*(g.x2-g.x1)+(g.y2-g.y1)*(g.y2-g.y1),t=den?((x-g.x1)*(g.x2-g.x1)+(y-g.y1)*(g.y2-g.y1))/den:0;t=Math.max(0,Math.min(1,t));var stops=g.stops;if(!stops.length)return[0,0,0,1];if(t<=stops[0][0])return stops[0][1];for(var i=1;i<stops.length;i++)if(t<=stops[i][0]){var p=stops[i-1];return mixColor(p[1],stops[i][1],(t-p[0])/Math.max(.0001,stops[i][0]-p[0]));}return stops[stops.length-1][1];}
+    function col(style,x,y){return style&&style.__gradient?gradientColor(style,x,y):parsed(style);}
+    function point(x,y){return{x:transform[0]*x+transform[2]*y+transform[4],y:transform[1]*x+transform[3]*y+transform[5],lx:x,ly:y};}
+    function vertex(p,c){if(count+6>data.length){var grown=new Float32Array(data.length*2);grown.set(data);data=grown;}data[count++]=p.x;data[count++]=p.y;data[count++]=c[0];data[count++]=c[1];data[count++]=c[2];data[count++]=c[3];}
+    function tri(a,b,c,style){vertex(a,col(style,a.lx,a.ly));vertex(b,col(style,b.lx,b.ly));vertex(c,col(style,c.lx,c.ly));}
+    function quad(a,b,c,d,style){tri(a,b,c,style);tri(a,c,d,style);}
+    function subpath(){current={points:[],closed:false};path.push(current);return current;}
+    function strokeSegment(a,b,width,style){var pa=point(a[0],a[1]),pb=point(b[0],b[1]),dx=pb.x-pa.x,dy=pb.y-pa.y,len=Math.hypot(dx,dy)||1,nx=-dy/len*width*.5,ny=dx/len*width*.5,c=parsed(style),p1={x:pa.x+nx,y:pa.y+ny,lx:a[0],ly:a[1]},p2={x:pb.x+nx,y:pb.y+ny,lx:b[0],ly:b[1]},p3={x:pb.x-nx,y:pb.y-ny,lx:b[0],ly:b[1]},p4={x:pa.x-nx,y:pa.y-ny,lx:a[0],ly:a[1]};vertex(p1,c);vertex(p2,c);vertex(p3,c);vertex(p1,c);vertex(p3,c);vertex(p4,c);}
+    var api={fillStyle:'#000',strokeStyle:'#000',lineWidth:1,lineCap:'butt',lineJoin:'miter',font:'10px sans-serif',textAlign:'start',textBaseline:'alphabetic',imageSmoothingEnabled:false};
+    api.beginFrame=function(){count=0;path=[];current=null;transform=[1,0,0,1,0,0];stack=[];gl.viewport(0,0,target.width,target.height);gl.clearColor(0.062,0.098,0.11,1);gl.clear(gl.COLOR_BUFFER_BIT);labelCtx.setTransform(1,0,0,1,0,0);labelCtx.clearRect(0,0,labelCanvas.width,labelCanvas.height);labelCtx.setTransform(RENDER_SCALE,0,0,RENDER_SCALE,0,0);};
+    api.endFrame=function(){gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data.subarray(0,count),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,count/6);};
+    api.createLinearGradient=function(x1,y1,x2,y2){return{__gradient:true,x1:x1,y1:y1,x2:x2,y2:y2,stops:[],addColorStop:function(at,c){this.stops.push([+at,parsed(c)]);this.stops.sort(function(a,b){return a[0]-b[0];});}};};
+    api.fillRect=function(x,y,w,h){var a=point(x,y),b=point(x+w,y),c=point(x+w,y+h),d=point(x,y+h);quad(a,b,c,d,api.fillStyle);};
+    api.beginPath=function(){path=[];current=null;};
+    api.moveTo=function(x,y){current=subpath();current.points.push([x,y]);};
+    api.lineTo=function(x,y){if(!current)current=subpath();current.points.push([x,y]);};
+    api.closePath=function(){if(current)current.closed=true;};
+    api.arc=function(cx,cy,r,start,end,ccw){var sweep=end-start;if(!ccw&&sweep<0)sweep+=Math.PI*2;if(ccw&&sweep>0)sweep-=Math.PI*2;var steps=Math.max(8,Math.ceil(Math.abs(sweep)*7)),first=[cx+Math.cos(start)*r,cy+Math.sin(start)*r];if(!current)current=subpath();if(current.points.length){var last=current.points[current.points.length-1];if(Math.abs(last[0]-first[0])>.01||Math.abs(last[1]-first[1])>.01)current.points.push(first);}else current.points.push(first);for(var i=1;i<=steps;i++){var a=start+sweep*i/steps;current.points.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}if(Math.abs(Math.abs(sweep)-Math.PI*2)<.01)current.closed=true;};
+    api.fill=function(){path.forEach(function(sp){if(sp.points.length<3)return;var p0=point(sp.points[0][0],sp.points[0][1]);for(var i=1;i<sp.points.length-1;i++)tri(p0,point(sp.points[i][0],sp.points[i][1]),point(sp.points[i+1][0],sp.points[i+1][1]),api.fillStyle);});};
+    api.stroke=function(){path.forEach(function(sp){for(var i=1;i<sp.points.length;i++)strokeSegment(sp.points[i-1],sp.points[i],api.lineWidth,api.strokeStyle);if(sp.closed&&sp.points.length>2)strokeSegment(sp.points[sp.points.length-1],sp.points[0],api.lineWidth,api.strokeStyle);});};
+    api.save=function(){stack.push({transform:transform.slice(),fillStyle:api.fillStyle,strokeStyle:api.strokeStyle,lineWidth:api.lineWidth,lineCap:api.lineCap,lineJoin:api.lineJoin,font:api.font,textAlign:api.textAlign,textBaseline:api.textBaseline});};
+    api.restore=function(){var s=stack.pop();if(!s)return;transform=s.transform;api.fillStyle=s.fillStyle;api.strokeStyle=s.strokeStyle;api.lineWidth=s.lineWidth;api.lineCap=s.lineCap;api.lineJoin=s.lineJoin;api.font=s.font;api.textAlign=s.textAlign;api.textBaseline=s.textBaseline;};
+    api.translate=function(x,y){transform[4]+=transform[0]*x+transform[2]*y;transform[5]+=transform[1]*x+transform[3]*y;};
+    api.rotate=function(r){var a=transform[0],b=transform[1],c=transform[2],d=transform[3],co=Math.cos(r),si=Math.sin(r);transform[0]=a*co+c*si;transform[1]=b*co+d*si;transform[2]=c*co-a*si;transform[3]=d*co-b*si;};
+    api.setTransform=function(a,b,c,d,e,f){transform=[a,b,c,d,e,f];};api.setLineDash=function(){};
+    api.measureText=function(text){labelCtx.font=api.font;return labelCtx.measureText(text);};
+    api.fillText=function(text,x,y){labelCtx.save();labelCtx.setTransform(RENDER_SCALE*transform[0],RENDER_SCALE*transform[1],RENDER_SCALE*transform[2],RENDER_SCALE*transform[3],RENDER_SCALE*transform[4],RENDER_SCALE*transform[5]);labelCtx.fillStyle=typeof api.fillStyle==='string'?api.fillStyle:'#fff';labelCtx.font=api.font;labelCtx.textAlign=api.textAlign;labelCtx.textBaseline=api.textBaseline;labelCtx.fillText(text,x,y);labelCtx.restore();};
+    api.gl=gl;return api;
+  }
+  var ctx=WebGLCanvas2D(canvas);
   var seasons=[
     {name:'Spring', weather:'Heavy rain · flood watch', growth:2, sky:['#789a9c','#c0c7a0'], ground:'#80a866', edge:'#526b4b', accent:'#efb86c'},
     {name:'Summer', weather:'Dry heat · drought inland', growth:1, sky:['#4e91a5','#ebc974'], ground:'#74a44e', edge:'#48653f', accent:'#f5d269'},
@@ -1201,7 +1250,7 @@
     else if(seasonIndex===3){if(particles.length<65)for(var j=0;j<3;j++)particles.push({x:rng(tick+j)*720,y:-5-rng(tick+j+8)*60,s:1+rng(tick+j+2)*2});ctx.fillStyle='rgba(245,248,239,.82)';particles.forEach(function(p){p.x+=Math.sin((p.y+tick)/20)*.5;p.y+=p.s*.5;rect(p.x,p.y,p.s+1,p.s+1,ctx.fillStyle);});particles=particles.filter(function(p){return p.y<540;});}
     else {if(particles.length<35)for(var k=0;k<2;k++)particles.push({x:-10,y:170+rng(tick+k)*250,s:1+rng(tick+k+12)*2});particles.forEach(function(p){p.x+=p.s*1.4;p.y+=Math.sin((p.x+tick)/24)*.25;rect(p.x,p.y,3,2,'rgba(215,127,59,.7)');});particles=particles.filter(function(p){return p.x<730;});}
   }
-  function render(now){var dt=Math.min(3,(now-lastTime)/16.67);lastTime=now;worldAngle=reduceMotion?0:(now%96000)/96000*Math.PI*2;var sea=seasons[seasonIndex];drawSky(sea);drawBoard(sea);drawWeather(sea,dt);requestAnimationFrame(render);}
+  function render(now){var dt=Math.min(3,(now-lastTime)/16.67);lastTime=now;worldAngle=reduceMotion?0:(now%96000)/96000*Math.PI*2;var sea=seasons[seasonIndex];ctx.beginFrame();drawSky(sea);drawBoard(sea);drawWeather(sea,dt);ctx.endFrame();requestAnimationFrame(render);}
   function pointInTile(px,py,corners){
     var sign=0;for(var i=0;i<4;i++){var a=corners[i],b=corners[(i+1)%4],cross=(b.x-a.x)*(py-a.y)-(b.y-a.y)*(px-a.x);if(Math.abs(cross)<.01)continue;var next=cross>0?1:-1;if(sign&&next!==sign)return false;sign=next;}return true;
   }
