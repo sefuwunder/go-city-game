@@ -25,5 +25,9 @@ Open `index.html` in any browser — no build, no server, no dependencies.
 - **Distinct architecture** — every building type has its own silhouette: Italianate Hearth (tile roofs, campaniles, colonnades) vs Moroccan Harbor (crenellations, zellige bands, minarets)
 - **Strained clusters** — rushing 3+ adjacent houses within 6 turns strains the cluster: lost wellbeing, paused maturation, and a scaling penalty off the mayor's effort score
 - **Changing seasons and weather**, rendered at true 2× resolution with a custom isometric valley favicon
+- **Day and night** — the valley cycles through dusk and dawn; lights glow in windows after dark
+- **Festivals and happiness** — communities hold festivals that lift valley-wide happiness; happy valleys grow faster
+- **Full-screen interface with retractable HUD** — the whole window is the valley; the HUD tucks away when you want the view
+- **Attract mode and tutorial** — an idle demo plays when untouched, and a guided first game teaches the ropes
 
 Built as a single self-contained `index.html` (+ favicon).

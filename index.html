@@ -118,6 +118,97 @@
     @keyframes quake-jolt { 0%,100%{transform:translate(0,0)} 12%{transform:translate(-4px,2px)} 28%{transform:translate(4px,-2px)} 46%{transform:translate(-3px,-1px)} 64%{transform:translate(3px,2px)} 82%{transform:translate(-1px,1px)} }
     .viewport.quake { animation:quake-jolt .7s steps(2,end); }
     @media (prefers-reduced-motion:reduce) { .toast { transition:none; } .viewport.quake { animation:none; } }
+
+    /* The valley is the whole interface: the old side rail now lives inside it as a retractable instrument panel. */
+    body { padding:clamp(8px,1.5vw,18px); background:#10191c; }
+    .game { width:min(1440px,100%); display:block; }
+    .stage { width:100%; }
+    .viewport { min-height:min(820px,calc(100vh - 36px)); padding:0; border:2px solid #273436; box-shadow:none; background:#10191c; }
+    canvas { width:100%; height:100%; min-height:min(820px,calc(100vh - 36px)); aspect-ratio:auto; object-fit:cover; }
+    #labels { inset:0; width:100%; height:100%; object-fit:cover; }
+    .film { inset:0; }
+    .mobile-hint { display:none !important; }
+    .hud {
+      position:absolute; z-index:8; top:12px; left:12px; right:70px; margin:0; padding:7px 10px;
+      max-width:620px; color:#fff7dc; background:#132022e8; border:1px solid #d8ca99;
+      box-shadow:3px 3px 0 #07101288; backdrop-filter:blur(3px);
+    }
+    .hud .label,.hud .turn small { color:#c5d1c8; }
+    .hud .stone { border-color:#f5e7b1; box-shadow:none; }
+    .hud-tools { position:absolute; z-index:32; top:12px; right:12px; display:flex; gap:6px; }
+    .hud-tools button,.hud-tabs button,.quick-controls button,.attract-card button {
+      border:1px solid #e1d29a; color:#fff6d6; background:#132022e8; min-height:36px; padding:7px 10px;
+      font-weight:900; cursor:pointer; box-shadow:2px 2px 0 #071012aa;
+    }
+    .hud-tools button[aria-expanded="true"],.hud-tabs button.active { color:#192426; background:#f0d88f; }
+    aside {
+      position:absolute; z-index:10; top:58px; right:12px; bottom:62px; width:min(350px,calc(100% - 24px));
+      display:block; overflow:auto; background:#111b1deF; border:1px solid #d8ca99; color:#fff5d5;
+      box-shadow:5px 5px 0 #07101299; scrollbar-width:thin; transition:opacity .16s,transform .16s;
+    }
+    aside.closed { opacity:0; transform:translateX(18px); pointer-events:none; }
+    .hud-tabs { position:sticky; z-index:2; top:0; display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#5e675f; border-bottom:1px solid #d8ca99; }
+    .hud-tabs button { min-width:0; padding:9px 2px; border:0; box-shadow:none; font-size:9px; }
+    aside .hud { position:relative; top:auto; left:auto; right:auto; max-width:none; margin:0; border:0; border-bottom:1px solid #68736d; box-shadow:none; background:#172326ed; color:#fff4d2; }
+    aside .panel { display:none; margin:0; border:0; border-bottom:1px solid #68736d; box-shadow:none; background:#172326ed; color:#fff4d2; }
+    aside .panel.active { display:block; }
+    aside .metric { background:#172326; }
+    aside .life-item,aside .life-title { border-color:#5c6964; }
+    aside .label,aside .weather,aside .life-title,aside .signal,aside .sound-note,aside .audio-status { color:#b8c6bd; }
+    aside .signal b,aside .rulebook strong,aside .sound-controls button { color:#fff4d2; }
+    aside .numbers { background:#5c6964; }
+    aside .rulebook { color:#c4cec6; }
+    .quick-controls { position:absolute; z-index:9; left:12px; bottom:12px; display:flex; gap:7px; }
+    .quick-controls button { min-height:40px; }
+    .quick-controls .new { background:#f0d88f; color:#172123; }
+    .toast { z-index:20; top:62px; }
+    .attract-screen {
+      position:absolute; z-index:30; inset:0; display:grid; place-items:center; padding:24px;
+      background:rgba(9,16,18,.42); color:#fff6d8;
+    }
+    .attract-screen.hidden { display:none; }
+    .attract-card {
+      width:min(570px,100%); border:2px solid #ead9a2; background:#132022ef; padding:clamp(20px,5vw,42px);
+      box-shadow:9px 9px 0 #071012a8; text-align:left;
+    }
+    .attract-kicker { margin:0 0 10px; color:#f0b36b; font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+    .attract-card h1 { margin:0; font-size:clamp(34px,8vw,68px); line-height:.9; letter-spacing:-.08em; }
+    .attract-card h1 span { color:#79c4c2; }
+    .attract-copy { min-height:76px; margin:19px 0 22px; max-width:48ch; color:#d7dfd2; line-height:1.55; font-size:13px; }
+    .attract-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    .attract-card button.primary { color:#172123; background:#f0d88f; }
+    .attract-dots { display:flex; gap:5px; margin-top:20px; }
+    .attract-dots i { width:24px; height:3px; background:#63706a; }
+    .attract-dots i.on { background:#efb064; }
+    .demo-tag { position:absolute; left:13px; bottom:64px; z-index:29; padding:5px 8px; border:1px solid #ddc98f; background:#132022db; color:#f1dca3; font-size:9px; letter-spacing:.09em; }
+    .demo-tag.hidden { display:none; }
+    .cycle-chip { color:#f0c878; }
+    .feature-panel { display:grid; gap:12px; }
+    .feature-block { display:grid; gap:7px; padding-bottom:11px; border-bottom:1px dashed #5c6964; }
+    .feature-block:last-child { border-bottom:0; padding-bottom:0; }
+    .feature-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    .feature-heading h3 { margin:0; font-size:12px; color:#fff4d2; }
+    .feature-heading span { color:#efc575; font-weight:900; font-size:11px; }
+    .feature-copy,.migration-line { margin:0; color:#b8c6bd; font-size:9px; line-height:1.45; }
+    .district-control { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px; }
+    .district-control select { min-width:0; border:1px solid #7b877f; background:#101a1c; color:#fff4d2; padding:7px; font:inherit; font-size:10px; }
+    .district-control button { border:1px solid #e1d29a; background:#f0d88f; color:#182325; padding:7px 9px; font-weight:900; cursor:pointer; }
+    .district-control button:disabled { opacity:.42; cursor:not-allowed; }
+    .need-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+    .need { padding:7px 5px; border:1px solid #59655f; text-align:center; }
+    .need b { display:block; color:#fff1c6; font-size:14px; }
+    .need span { color:#aebdb4; font-size:8px; text-transform:uppercase; letter-spacing:.04em; }
+    .shift-on { background:#b45f3e !important; color:#fff7df !important; }
+    @media (max-width:680px) {
+      body { padding:0; }
+      .viewport,canvas { min-height:100svh; border:0; }
+      .hud { top:8px; left:8px; right:56px; grid-template-columns:1fr 64px 1fr; padding:6px; }
+      .hud .label { font-size:7px; }.hud .score{font-size:13px}.hud .turn{font-size:9px}
+      .hud-tools { top:8px; right:8px; }.hud-tools button{width:40px;padding:5px;font-size:0}.hud-tools button:before{content:'HUD';font-size:9px}
+      aside { top:52px; right:8px; left:8px; bottom:60px; width:auto; }
+      .quick-controls { left:8px; bottom:8px; right:8px; }.quick-controls button{flex:1}
+      .attract-screen { padding:14px; }.attract-card{padding:24px}.attract-card h1{font-size:44px}
+    }
   </style>
 </head>
 <body>
@@ -132,6 +223,20 @@
       <canvas id="board" width="1440" height="1080" tabindex="0" role="application" aria-label="A native WebGL twenty by twenty isometric valley with steep physical hills, where two mayors build neighboring communities through weather, earthquakes, water access, boat cargo, farms, culture, commerce, roads, and a weekly freight train. Tap an empty plot to settle it."></canvas>
       <canvas id="labels" width="1440" height="1080" aria-hidden="true"></canvas>
       <div class="film"></div><div class="toast" id="toast"></div>
+      <div class="hud-tools"><button id="hudToggle" type="button" aria-expanded="false" aria-controls="gameHud">Open HUD</button></div>
+      <div class="demo-tag" id="demoTag">DEMO · VALLEY PLAYING ITSELF</div>
+      <section class="attract-screen" id="attractScreen" aria-label="Go × City introduction">
+        <div class="attract-card">
+          <p class="attract-kicker" id="attractKicker">A cooperative city game</p>
+          <h1 id="attractTitle">GO <span>×</span> CITY</h1>
+          <p class="attract-copy" id="attractCopy">Two mayors. One living valley. Build slowly, follow the water, and let neighborhoods grow into places worth sharing.</p>
+          <div class="attract-actions" id="attractActions">
+            <button class="primary" id="attractPrimary" type="button">How to play</button>
+            <button id="attractSecondary" type="button">Begin new valley</button>
+          </div>
+          <div class="attract-dots" id="attractDots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+        </div>
+      </section>
     </div>
     <p class="mobile-hint">Tap a glowing plot to settle it. The whole twenty-by-twenty valley fits.</p>
   </section>
@@ -140,7 +245,7 @@
     <section class="panel">
       <div class="season-row">
         <div><h2 class="season-name" id="season">Spring</h2><p class="weather" id="weather">Soft rain · growth +2</p></div>
-        <span class="clock"><b id="year">YEAR 1</b><small id="trainClock">WEEK 1 · TRAIN IN 6</small></span>
+        <span class="clock"><b id="year">YEAR 1</b><small id="trainClock">WEEK 1 · TRAIN IN 6</small><small class="cycle-chip" id="dayClock">DAWN · 06:00</small></span>
       </div>
       <div class="season-track" id="seasonTrack" aria-label="Turns until next season"></div>
     </section>
@@ -235,6 +340,23 @@
         <div class="life-item"><span>districts hit</span><b id="quakeHits">0</b></div>
       </div>
     </section>
+    <section class="panel feature-panel" aria-label="District culture and happiness">
+      <div class="feature-block">
+        <div class="feature-heading"><h3 id="festivalName">Lantern Festival</h3><span><b id="cultureBank">0</b> culture · <b id="tourism">0</b> visitors</span></div>
+        <p class="feature-copy" id="festivalCopy">Culture buildings generate culture each week. Spend 18 to host this season’s festival in a Hearth district.</p>
+        <div class="district-control"><select id="festivalDistrict" aria-label="Festival district"></select><button id="hostFestival" type="button">Host · 18</button></div>
+      </div>
+      <div class="feature-block">
+        <div class="feature-heading"><h3>Citizen happiness</h3><span id="happinessAverage">—</span></div>
+        <div class="need-grid" aria-label="Citizen needs"><div class="need"><b id="needWellness">—</b><span>wellness</span></div><div class="need"><b id="needBeauty">—</b><span>beauty</span></div><div class="need"><b id="needMeaning">—</b><span>meaning</span></div></div>
+        <p class="migration-line" id="migrationLine">Districts with unmet needs lose citizens to happier places.</p>
+      </div>
+      <div class="feature-block">
+        <div class="feature-heading"><h3>Night economy</h3><span><b id="nightProduction">0</b> extra goods</span></div>
+        <p class="feature-copy" id="shiftCopy">Run one district after dark for extra output at a 12-point happiness cost.</p>
+        <div class="district-control"><select id="shiftDistrict" aria-label="Night shift district"></select><button id="toggleShift" type="button">Start shift</button></div>
+      </div>
+    </section>
     <section class="panel" aria-label="Mayors' imperfect signals">
       <h3 class="life-title" style="margin:-13px -13px 10px">Mayors’ imperfect signals</h3>
       <div class="signals">
@@ -264,6 +386,9 @@
         <strong>The weekly goods train.</strong> Every six turns mark a week. The freight train circles the whole valley and delivers two crates to every settled plot, no matter which community lives there. Trackside houses mature into depots after a season; when the train passes, each depot sends bonus goods through its connected rural-road community. Fresh rail service lifts wellbeing across the entire area for the new week; watch the timetable beside the year.<br><br>
         <strong>Wellbeing shapes growth.</strong> Quality of life rises with green land, roads, nearby shops, civic care, lively places, good weather, and manageable density. Healthy tiles gain more citizens; tiles above 58% mature each season, and tiles above 82% can grow twice. Struggling tiles pause their architectural growth. Flowering gardens mark thriving plots.<br><br>
         <strong>Care and culture emerge.</strong> Growing connected communities establish <strong>spiritual places</strong> first, then leafy <strong>parks</strong>, <strong>libraries</strong>, and finally <strong>hospitals</strong>. Mature neighborhoods can also open <strong>art studios</strong>, <strong>yoga studios</strong>, <strong>law offices</strong>, and <strong>botanicas</strong>. Along with libraries, parks, spiritual places, plazas, and playhouses, they generate cultural impact that adds directly to each mayor’s effort score. Italianate Hearth and Moroccan Harbor give every civic building its own architectural character.<br><br>
+        <strong>Culture becomes a season.</strong> Art studios, yoga studios, botanicas, libraries, parks, spiritual places, plazas, and playhouses generate culture each week. Spend 18 culture to host the current seasonal festival in a chosen Hearth district. Lantern festivals, riverlight nights, harvest fairs, and solstice markets bring an immediate population surge and lasting tourism.<br><br>
+        <strong>Citizens follow a good life.</strong> Every district measures wellness, beauty, and meaning. Yoga studios and botanicas answer wellness; art studios and parks add beauty; botanicas, spiritual places, and libraries strengthen meaning. Each week, citizens can move from a poorly served district to a happier one, even across the valley’s civic border.<br><br>
+        <strong>The valley has a night.</strong> Daylight rolls continuously across the field. At night, windows, markets, festival streets, and cargo boats light up. A mayor can put any Hearth district on night shift: it produces extra trade every week, but its happiness falls by 12 points until the shift ends.<br><br>
         <strong>The fault remembers density.</strong> Every third week, the valley’s fault shifts. The most tightly knit district of four or more directly connected plots is struck; extra internal street links deepen the damage. Its affected plots carry a massive temporary effort penalty for the following week, marked by cracked ground and rubble. Looser settlements escape the main shock.<br><br>
         <strong>Rare trades find their niche.</strong> Mature working land can attract <strong>grain mills</strong>, <strong>bakeries</strong>, <strong>smithies</strong>, and <strong>apothecaries</strong>. Larger centers may open <strong>coaching inns</strong> and <strong>playhouses</strong>; waterside communities develop <strong>fisheries</strong> and <strong>ferry houses</strong>. No two districts receive the same mix automatically—the land, age, population, and local connections all matter.<br><br>
         <strong>Build with the water.</strong> Wetland plots do not receive ordinary masonry. Hearth uses bright, buoyant timber houses inspired by the floating villages of Tonle Sap Lake; Harbor raises timber homes and verandahs on tall stilts, with pitched roofs and boardwalks inspired by Kampong Ayer.<br><br>
@@ -335,6 +460,8 @@
     {name:'Winter', weather:'First snow', growth:0, sky:['#667986','#c7d0ce'], ground:'#b6c2b3', edge:'#697a73', accent:'#e9f0e8'}
   ];
   var board, terrain, elevation, valleySeed, turn, moves, seasonIndex, year, captures, log, cursor, particles, tick, lastTime, trainGoods, trainGoodsByPlayer, depotGoods, trainRuns, lastTrainMove, trainStartedAt, boatGoods, boatGoodsByPlayer, boatRuns, lastBoatMove, climate, earthquake, foodStocks, foodHarvest, foodSales, humanSignal, cpuSignal, cpuThinking=false, cpuTimer=null, worldAngle=0;
+  var cultureBank, tourism, festivalKeys, festivalCells, nightShifts, nightProduction, lastMigration, dayPhase=0, nightAmount=0, lastClockPaint=0;
+  var gameMode='demo',attractPage=0,attractTimer=null,demoTimer=null,renderPulse=null,lastFrameAt=0;
   var audioCtx=null,masterGain=null,musicGain=null,fxGain=null,audioStarted=false,audioEnabled=true,musicEnabled=true,weatherNodes=[],musicTimer=null,musicStep=0,musicNext=0,stormTimer=null;
   var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reviewMode=location.search.indexOf('architecture-review=1')!==-1, reviewArt={};
@@ -480,6 +607,7 @@
     board=[]; for(var y=0;y<N;y++){ var row=[]; for(var x=0;x<N;x++) row.push(null); board.push(row); }
     turn=0; moves=0; seasonIndex=0; year=1; captures=[0,0]; log=[]; cursor={x:Math.floor(N/2),y:Math.floor(N/2)}; particles=[]; tick=0; lastTime=performance.now();
     trainGoods=0; trainGoodsByPlayer=[0,0]; depotGoods=0; trainRuns=0; lastTrainMove=-99; trainStartedAt=0;boatGoods=0;boatGoodsByPlayer=[0,0];boatRuns=0;lastBoatMove=-99;foodStocks={};foodHarvest=0;foodSales=0;
+    cultureBank=[0,0];tourism=[0,0];festivalKeys=[{},{}];festivalCells={};nightShifts={};nightProduction=0;lastMigration=null;
     earthquake={cells:{},damageByPlayer:[0,0],hits:0,active:false,epicenter:null,connections:0};
     humanSignal='You can place, but Harbor only sees the result.';cpuSignal='The other mayor studies the valley in silence.';refreshClimate();
     if(audioStarted&&audioEnabled)startWeather();
@@ -525,6 +653,20 @@
     while(stack.length){ var q=stack.pop(), k=q[0]+','+q[1]; if(seen[k])continue; seen[k]=1; cells.push(q);
       neighbors(q[0],q[1]).forEach(function(n){ var v=board[n[1]][n[0]]; if(!v){var lk=n[0]+','+n[1];if(!libMap[lk]){libMap[lk]=1;libs.push(n);}} else if(v.player===p.player) stack.push(n); });
     } return {cells:cells,libs:libs};
+  }
+  function districtId(cells,player){
+    var lead=cells.slice().sort(function(a,b){return a[1]-b[1]||a[0]-b[0];})[0];return 'p'+player+'-'+lead[0]+'-'+lead[1];
+  }
+  function districtName(cells,player){
+    var lead=cells.slice().sort(function(a,b){return a[1]-b[1]||a[0]-b[0];})[0];return name(player)+' '+coord(lead[0],lead[1])+' district';
+  }
+  function festivalInfo(){
+    return [
+      {name:'Lantern Festival',copy:'Lanterns welcome spring rain and new neighbors.'},
+      {name:'Riverlight Night Market',copy:'Long summer evenings turn waterfront trade into celebration.'},
+      {name:'Harvest Fair',copy:'Autumn fields feed a district-wide fair.'},
+      {name:'Solstice Market',copy:'Winter lights gather the valley around local makers.'}
+    ][seasonIndex];
   }
   function urbanizationData(){
     var visited={},map={},byPlayer=[0,0],clusters=0;
@@ -578,6 +720,7 @@
     playBuildChime(p);moves++; advanceIfNeeded(); turn=1-p; cursor={x:x,y:y}; updateUI();
   }
   function humanPlace(x,y){
+    if(gameMode!=='play')return;
     startAudio();if(turn!==0||cpuThinking)return;
     var result=makeMove(x,y,0);
     if(!result.ok){say(result.reason==='occupied'?'That plot is already settled.':'A community needs one open path.');return;}
@@ -608,17 +751,23 @@
     },520);
   }
   function humanPass(){
+    if(gameMode!=='play')return;
     startAudio();if(turn!==0||cpuThinking)return;humanSignal='Hearth conserves effort; Harbor can only guess why.'; addLog('Hearth watched the weather and conserved effort.'); moves++; advanceIfNeeded(); turn=1; updateUI(); scheduleCPU();
   }
   function advanceIfNeeded(){ if(moves>0&&moves%6===0){
     var freight=runTrainDelivery(),waterFreight=runBoatDelivery();
     seasonIndex++; if(seasonIndex===4){seasonIndex=0;year++;}refreshClimate();if(audioStarted&&audioEnabled)startWeather();
-    var quake=resolveEarthquake(),report=grow(); addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
+    var quake=resolveEarthquake(),report=grow(),cultureGain=[Math.max(0,Math.round(report.community.neighborhood.byPlayer[0]/4)),Math.max(0,Math.round(report.community.neighborhood.byPlayer[1]/4))];
+    cultureBank[0]+=cultureGain[0];cultureBank[1]+=cultureGain[1];nightProduction+=report.community.economy.nightOutput;expireFestivalCells();
+    addLog('Week '+trainRuns+': the train delivered '+freight.crates+' crates across '+freight.stops+' settled plot'+(freight.stops===1?'':'s')+'.');
     if(waterFreight.sailings)addLog(waterFreight.sailings+' cargo boat'+(waterFreight.sailings===1?' sailed':'s sailed')+' the wetland channels with '+waterFreight.crates+' crates.');
     if(quake.active){var struck=quake.damageByPlayer[0]?name(0):name(1),loss=quake.damageByPlayer[0]+quake.damageByPlayer[1];addLog('EARTHQUAKE: the fault struck '+struck+'’s tightest district—'+quake.hits+' plots carry −'+loss+' effort this week.');}
     else if(trainRuns%3===0)addLog('The fault shifted, but no tightly knit district met the shock.');
     if(freight.bonus)addLog(freight.depots+' trackside depot'+(freight.depots===1?'':'s')+' routed '+freight.bonus+' bonus goods through rural communities.');
     addLog(seasons[seasonIndex].name+' arrived: '+seasons[seasonIndex].weather.toLowerCase()+'.');
+    if(cultureGain[0]||cultureGain[1])addLog('Culture places generated '+(cultureGain[0]+cultureGain[1])+' culture for seasonal festivals.');
+    if(report.community.economy.nightOutput)addLog('Night shifts produced '+report.community.economy.nightOutput+' extra local goods at a happiness cost.');
+    if(report.migration)addLog(report.migration.amount+' citizen'+(report.migration.amount===1?'':'s')+' moved from '+report.migration.from+' to happier '+report.migration.to+'.');
     if(climate.floodCount)addLog(climate.floodCount+' low plots flooded after the spring rain.');
     if(climate.droughtCount)addLog(climate.droughtCount+' inland plots entered summer drought.');
     if(report.food.harvest)addLog('Food chain: farms harvested '+report.food.harvest+'; commerce moved '+report.food.sold+' into the valley.');
@@ -627,7 +776,8 @@
     if(report.cultureOpened.length) addLog('Culture grew through '+report.cultureOpened.join(', ')+'.');
     if(report.rareOpened.length) addLog('New local institutions: '+report.rareOpened.join(', ')+'.');
     if(report.urban.total)addLog(report.urban.clusters+' rushed housing cluster'+(report.urban.clusters===1?' is':'s are')+' carrying −'+report.urban.total+' effort; their architectural growth paused.');
-    addLog('Shared wellbeing is '+report.average+'%; '+report.matured+' tile'+(report.matured===1?'':'s')+' grew.');
+    addLog('Shared happiness is '+report.average+'%; '+report.matured+' tile'+(report.matured===1?'':'s')+' grew.');
+    maybeHostCpuFestival(report.community);
   } }
   function runTrainDelivery(){
     var stops=0,baseByPlayer=[0,0],bonusByPlayer=[0,0],depots=0;
@@ -642,6 +792,24 @@
     water.routes.forEach(function(route){var a=board[route.from[1]][route.from[0]],b=board[route.to[1]][route.to[0]];if(a)byPlayer[a.player]+=3;if(b)byPlayer[b.player]+=3;});
     boatGoods+=crates;boatGoodsByPlayer[0]+=byPlayer[0];boatGoodsByPlayer[1]+=byPlayer[1];boatRuns+=water.routes.length;if(water.routes.length)lastBoatMove=moves;
     return {crates:crates,sailings:water.routes.length,byPlayer:byPlayer};
+  }
+  function expireFestivalCells(){Object.keys(festivalCells).forEach(function(key){if(festivalCells[key].until<=moves)delete festivalCells[key];});}
+  function hostFestival(player,id,data,quiet){
+    data=data||communityData();var district=data.districts.filter(function(d){return d.id===id&&d.player===player;})[0],cost=18,key=year+'-'+seasonIndex;
+    if(!district||cultureBank[player]<cost||festivalKeys[player][key])return false;
+    cultureBank[player]-=cost;festivalKeys[player][key]=1;var visitors=8+district.cells.length*3+district.cultureSites*4;tourism[player]+=visitors;
+    district.cells.forEach(function(c,i){var v=board[c[1]][c[0]];if(v)v.pop+=i===0?4:2;festivalCells[c[0]+','+c[1]]={player:player,until:moves+6};});
+    if(!quiet){addLog(name(player)+' hosted the '+festivalInfo().name+' in '+district.name+': '+visitors+' visitors arrived.');say(festivalInfo().name+' · +'+visitors+' visitors');playBuildChime(player);updateUI();}
+    return true;
+  }
+  function maybeHostCpuFestival(data){
+    var key=year+'-'+seasonIndex;if(cultureBank[1]<18||festivalKeys[1][key])return;var districts=data.districts.filter(function(d){return d.player===1;}).sort(function(a,b){return b.happiness-a.happiness||b.cells.length-a.cells.length;});
+    if(districts.length&&hostFestival(1,districts[0].id,data,true))addLog('Harbor hosted the '+festivalInfo().name+' in '+districts[0].name+'.');
+  }
+  function runMigration(districts){
+    lastMigration=null;if(!districts||districts.length<2)return null;var ordered=districts.slice().sort(function(a,b){return a.happiness-b.happiness;}),from=ordered[0],to=ordered[ordered.length-1],gap=to.happiness-from.happiness;
+    if(gap<12||from.pop<=from.cells.length*2)return null;var source=from.cells.slice().sort(function(a,b){return board[b[1]][b[0]].pop-board[a[1]][a[0]].pop;})[0],target=to.cells.slice().sort(function(a,b){return board[a[1]][a[0]].pop-board[b[1]][b[0]].pop;})[0],amount=Math.min(3,Math.max(1,Math.floor(gap/15)),board[source[1]][source[0]].pop-2);
+    if(amount<1)return null;board[source[1]][source[0]].pop-=amount;board[target[1]][target[0]].pop+=amount;lastMigration={amount:amount,from:from.name,to:to.name};return lastMigration;
   }
   function grow(){
     var pulse=communityData(), seen={}, matured=0;
@@ -659,8 +827,8 @@
     [['hospitals','hospital','hospitals'],['spiritual','spiritual place','spiritual places'],['libraries','library','libraries'],['parks','park','parks']].forEach(function(pair){var gained=after.civic.counts[pair[0]]-pulse.civic.counts[pair[0]];if(gained>0)opened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
     [['fishery','fishery','fisheries'],['ferry','ferry house','ferry houses'],['mill','grain mill','grain mills'],['bakery','bakery','bakeries'],['smithy','smithy','smithies'],['apothecary','apothecary','apothecaries'],['inn','coaching inn','coaching inns'],['playhouse','playhouse','playhouses']].forEach(function(pair){var gained=after.rare.counts[pair[0]]-pulse.rare.counts[pair[0]];if(gained>0)rareOpened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
     var cultureOpened=[];[['art','art studio','art studios'],['yoga','yoga studio','yoga studios'],['lawyer','law office','law offices'],['botanica','botanica','botanicas']].forEach(function(pair){var gained=after.neighborhood.counts[pair[0]]-pulse.neighborhood.counts[pair[0]];if(gained>0)cultureOpened.push(gained+' '+(gained===1?pair[1]:pair[2]));});
-    var food=runFoodCycle(after);
-    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened,rareOpened:rareOpened,cultureOpened:cultureOpened,food:food,urban:after.urban};
+    var migration=runMigration(after.districts),food=runFoodCycle(after);
+    return {trade:after.economy.trade,deliveries:after.economy.deliveries,average:after.average,matured:matured,opened:opened,rareOpened:rareOpened,cultureOpened:cultureOpened,food:food,urban:after.urban,migration:migration,community:after};
   }
   function runFoodCycle(data){
     var harvest=0,sold=0,nextStocks={};
@@ -789,27 +957,31 @@
     return {map:map,counts:counts,byPlayer:byPlayer,impact:byPlayer[0]+byPlayer[1]};
   }
   function communityData(){
-    var seen={},tiles={},places=placeData(),civic=civicData(),food=foodNetworkData(places,civic),rare=rareBusinessData(places,civic,food),neighborhood=neighborhoodBusinessData(places,civic,food,rare),urban=urbanizationData(),waterTrade=waterTradeData(),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0,waterTrade:waterTrade.routes.length*6},wellTotal=0,occupied=0,thriving=0,waterCount=0,weatherStress=0,railLift=moves-lastTrainMove<6?5:0,boatLift=moves-lastBoatMove<6?4:0;
+    var seen={},tiles={},districts=[],places=placeData(),civic=civicData(),food=foodNetworkData(places,civic),rare=rareBusinessData(places,civic,food),neighborhood=neighborhoodBusinessData(places,civic,food,rare),urban=urbanizationData(),waterTrade=waterTradeData(),economy={shops:0,bicyclists:0,drivers:0,walkins:0,deliveries:0,trade:0,waterTrade:waterTrade.routes.length*6,nightOutput:0,nightOutputByPlayer:[0,0]},wellTotal=0,occupied=0,thriving=0,waterCount=0,weatherStress=0,railLift=moves-lastTrainMove<6?5:0,boatLift=moves-lastBoatMove<6?4:0;
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){
       var key=x+','+y,v=board[y][x]; if(!v||seen[key])continue;
-      var g=groupAt(x,y),shops=0,people=0,connections=0,groupFarms=0,groupMarkets=0,groupAgencies=0,rareTrades=0,cultureSites=0,services={hospital:0,spiritual:0,library:0,park:0};
-      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],service=civic.map[cx+','+cy],foodSite=food.map[cx+','+cy],rareSite=rare.map[cx+','+cy],neighborhoodSite=neighborhood.map[cx+','+cy];seen[cx+','+cy]=1;people+=cell.pop;if(isShop(cell)&&!service&&!neighborhoodSite)shops++;if(service)services[service]++;if(rareSite)rareTrades++;if(neighborhoodSite)cultureSites++;if(!service&&(terrain[cy][cx]==='field'||terrain[cy][cx]==='pasture'))groupFarms++;if(foodSite==='market')groupMarkets++;if(foodSite==='agency')groupAgencies++;
+      var g=groupAt(x,y),groupId=districtId(g.cells,v.player),shops=0,people=0,connections=0,groupFarms=0,groupMarkets=0,groupAgencies=0,rareTrades=0,cultureSites=0,needSources={wellness:0,beauty:0,meaning:0},services={hospital:0,spiritual:0,library:0,park:0};
+      g.cells.forEach(function(c){var cx=c[0],cy=c[1],cell=board[cy][cx],cellKey=cx+','+cy,service=civic.map[cellKey],foodSite=food.map[cellKey],rareSite=rare.map[cellKey],neighborhoodSite=neighborhood.map[cellKey],place=places.map[cellKey];seen[cellKey]=1;people+=cell.pop;if(isShop(cell)&&!service&&!neighborhoodSite)shops++;if(service)services[service]++;if(rareSite)rareTrades++;if(neighborhoodSite)cultureSites++;if(!service&&(terrain[cy][cx]==='field'||terrain[cy][cx]==='pasture'))groupFarms++;if(foodSite==='market')groupMarkets++;if(foodSite==='agency')groupAgencies++;
+        if(neighborhoodSite==='yoga')needSources.wellness+=28;if(neighborhoodSite==='botanica'){needSources.wellness+=18;needSources.meaning+=24;}if(neighborhoodSite==='art'){needSources.beauty+=28;needSources.meaning+=8;}if(service==='hospital')needSources.wellness+=20;if(service==='park'){needSources.wellness+=8;needSources.beauty+=22;}if(service==='spiritual')needSources.meaning+=24;if(service==='library')needSources.meaning+=18;if(rareSite==='playhouse')needSources.beauty+=18;if(place&&place.lead&&place.type==='plaza')needSources.beauty+=12;
         if(cx+1<N&&board[cy][cx+1]&&board[cy][cx+1].player===cell.player)connections++;
         if(cy+1<N&&board[cy+1][cx]&&board[cy+1][cx].player===cell.player)connections++;
       });
       var cyclists=Math.ceil(connections/2),drivers=cyclists?Math.max(1,Math.round(cyclists*.35)):0,walkins=Math.min(people,shops*3+groupMarkets*4),deliveries=shops?Math.min(Math.max(0,people-walkins),drivers*4+groupAgencies*3):0;
-      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8,foodLift=(groupFarms&&shops?5:0)+groupMarkets*5+groupAgencies*4,rareLift=Math.min(10,rareTrades*3),cultureLift=Math.min(12,cultureSites*4);
-      economy.shops+=shops;economy.bicyclists+=cyclists;economy.drivers+=drivers;economy.walkins+=walkins;economy.deliveries+=deliveries;economy.trade+=walkins+deliveries+rareTrades*2;
+      var civicLift=services.hospital*10+services.library*8+services.spiritual*6+services.park*8,foodLift=(groupFarms&&shops?5:0)+groupMarkets*5+groupAgencies*4,rareLift=Math.min(10,rareTrades*3),cultureLift=Math.min(12,cultureSites*4),shiftOn=!!nightShifts[groupId],shiftOutput=shiftOn?Math.max(2,shops*2+drivers+groupFarms+groupMarkets*2+groupAgencies*2):0;
+      economy.shops+=shops;economy.bicyclists+=cyclists;economy.drivers+=drivers;economy.walkins+=walkins;economy.deliveries+=deliveries;economy.trade+=walkins+deliveries+rareTrades*2+shiftOutput;economy.nightOutput+=shiftOutput;economy.nightOutputByPlayer[v.player]+=shiftOutput;
+      var districtWell=0;
       g.cells.forEach(function(c){
         var cx=c[0],cy=c[1],cell=board[cy][cx],land=terrain[cy][cx],friends=0,place=places.map[cx+','+cy],service=civic.map[cx+','+cy],seasonLift=[6,2,3,-4][seasonIndex],water=waterAccessAt(cx,cy),hazard=hazardAt(cx,cy);
         neighbors(cx,cy).forEach(function(n){var q=board[n[1]][n[0]];if(q&&q.player===cell.player)friends++;});
         var green={meadow:9,field:5,pasture:7,grove:13,wetland:7,ridge:6}[land],placeLift=place?(place.type==='plaza'?14:place.type==='center'?10:place.type==='commune'?8:12):0,urbanStrain=urban.map[cx+','+cy]||0,waterfrontLift=land==='wetland'&&boatLift?boatLift:0;
-        var access=shops>0,score=42+seasonLift+green+railLift+waterfrontLift+(water?13:0)+foodLift+rareLift+cultureLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-(hazard==='flood'?15:hazard==='drought'?18:0)-urbanStrain-Math.max(0,cell.pop-18);
-        score=Math.max(8,Math.min(98,Math.round(score)));tiles[cx+','+cy]={score:score,tradeAccess:access,driverAccess:drivers>0,service:service,water:water,hazard:hazard,urbanStrain:urbanStrain};wellTotal+=score;occupied++;if(water)waterCount++;if(hazard)weatherStress++;if(score>=72)thriving++;
+        var access=shops>0,score=42+seasonLift+green+railLift+waterfrontLift+(water?13:0)+foodLift+rareLift+cultureLift+Math.min(12,friends*4)+(access?Math.min(12,4+drivers*2):0)+placeLift+Math.min(24,civicLift)+(service?4:0)-(hazard==='flood'?15:hazard==='drought'?18:0)-urbanStrain-Math.max(0,cell.pop-18)-(shiftOn?12:0);
+        score=Math.max(8,Math.min(98,Math.round(score)));tiles[cx+','+cy]={score:score,tradeAccess:access,driverAccess:drivers>0,service:service,water:water,hazard:hazard,urbanStrain:urbanStrain};districtWell+=score;wellTotal+=score;occupied++;if(water)waterCount++;if(hazard)weatherStress++;if(score>=72)thriving++;
       });
+      var scale=Math.max(1,g.cells.length),needs={wellness:Math.max(18,Math.min(98,Math.round(42+needSources.wellness/Math.sqrt(scale)))),beauty:Math.max(18,Math.min(98,Math.round(38+needSources.beauty/Math.sqrt(scale)))),meaning:Math.max(18,Math.min(98,Math.round(36+needSources.meaning/Math.sqrt(scale))))};
+      var baseHappy=districtWell/scale,happiness=Math.round((baseHappy+needs.wellness+needs.beauty+needs.meaning)/4);districts.push({id:groupId,name:districtName(g.cells,v.player),player:v.player,cells:g.cells.slice(),pop:people,happiness:happiness,needs:needs,cultureSites:cultureSites,nightShift:shiftOn,nightOutput:shiftOutput});
     }
     economy.trade+=economy.waterTrade;
-    return {tiles:tiles,places:places,civic:civic,food:food,rare:rare,neighborhood:neighborhood,urban:urban,waterTrade:waterTrade,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving,waterCount:waterCount,weatherStress:weatherStress};
+    return {tiles:tiles,districts:districts,places:places,civic:civic,food:food,rare:rare,neighborhood:neighborhood,urban:urban,waterTrade:waterTrade,economy:economy,average:occupied?Math.round(wellTotal/occupied):0,thriving:thriving,waterCount:waterCount,weatherStress:weatherStress};
   }
   function stats(){
     var stones=[0,0],pop=[0,0],effort=[0,0],depots=0,life={businesses:0,farmers:0,bicyclists:0,herders:0},community=communityData(),roadLinks=ruralRoadLinks();
@@ -820,11 +992,24 @@
       if(terrain[y][x]==='pasture')life.herders+=1+Math.floor(v.age/3);
     }}
     var terr=territoryData();life.bicyclists=community.economy.bicyclists;
-    var score=[Math.max(0,effort[0]+terr.count[0]+captures[0]+community.neighborhood.byPlayer[0]-community.urban.byPlayer[0]-earthquake.damageByPlayer[0]),Math.max(0,effort[1]+terr.count[1]+captures[1]+community.neighborhood.byPlayer[1]-community.urban.byPlayer[1]-earthquake.damageByPlayer[1])];
-    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,food:community.food,rare:community.rare,neighborhood:community.neighborhood,urban:community.urban,earthquake:earthquake,economy:community.economy,waterTrade:community.waterTrade,wellness:community.average,thriving:community.thriving,waterCount:community.waterCount,weatherStress:community.weatherStress,railGoods:trainGoods,railGoodsByPlayer:trainGoodsByPlayer,depotGoods:depotGoods,depots:depots,ruralRoads:roadLinks.length,trainRuns:trainRuns,boatGoods:boatGoods,boatRuns:boatRuns,score:score,sharedEffort:score[0]+score[1]};
+    var score=[Math.max(0,effort[0]+terr.count[0]+captures[0]+community.neighborhood.byPlayer[0]+Math.floor(tourism[0]/2)-community.urban.byPlayer[0]-earthquake.damageByPlayer[0]),Math.max(0,effort[1]+terr.count[1]+captures[1]+community.neighborhood.byPlayer[1]+Math.floor(tourism[1]/2)-community.urban.byPlayer[1]-earthquake.damageByPlayer[1])];
+    return {stones:stones,pop:pop,terr:terr,life:life,places:community.places,civic:community.civic,food:community.food,rare:community.rare,neighborhood:community.neighborhood,urban:community.urban,earthquake:earthquake,economy:community.economy,waterTrade:community.waterTrade,wellness:community.average,thriving:community.thriving,waterCount:community.waterCount,weatherStress:community.weatherStress,railGoods:trainGoods,railGoodsByPlayer:trainGoodsByPlayer,depotGoods:depotGoods,depots:depots,ruralRoads:roadLinks.length,trainRuns:trainRuns,boatGoods:boatGoods,boatRuns:boatRuns,culture:cultureBank,tourism:tourism,score:score,sharedEffort:score[0]+score[1],community:community};
+  }
+  function fillDistrictSelect(select,districts){
+    var previous=select.value;select.innerHTML='';if(!districts.length){var empty=document.createElement('option');empty.value='';empty.textContent='No Hearth districts yet';select.appendChild(empty);select.disabled=true;return;}
+    select.disabled=false;districts.forEach(function(d){var option=document.createElement('option');option.value=d.id;option.textContent=d.name+' · '+d.happiness+'%';select.appendChild(option);});if(districts.some(function(d){return d.id===previous;}))select.value=previous;
+  }
+  function updateDistrictUI(s){
+    var hearth=s.community.districts.filter(function(d){return d.player===0;}),all=s.community.districts,info=festivalInfo(),fSelect=document.getElementById('festivalDistrict'),shiftSelect=document.getElementById('shiftDistrict');fillDistrictSelect(fSelect,hearth);fillDistrictSelect(shiftSelect,hearth);
+    document.getElementById('festivalName').textContent=info.name;document.getElementById('cultureBank').textContent=cultureBank[0];document.getElementById('tourism').textContent=tourism[0];document.getElementById('festivalCopy').textContent=info.copy+' Culture places fund it; hosting costs 18.';
+    var hosted=!!festivalKeys[0][year+'-'+seasonIndex],host=document.getElementById('hostFestival');host.disabled=!fSelect.value||cultureBank[0]<18||hosted;host.textContent=hosted?'Hosted this season':'Host · 18';
+    function avg(key){if(!all.length)return '—';return Math.round(all.reduce(function(sum,d){return sum+d.needs[key];},0)/all.length)+'%';}
+    document.getElementById('needWellness').textContent=avg('wellness');document.getElementById('needBeauty').textContent=avg('beauty');document.getElementById('needMeaning').textContent=avg('meaning');document.getElementById('happinessAverage').textContent=all.length?Math.round(all.reduce(function(sum,d){return sum+d.happiness;},0)/all.length)+'%':'—';
+    document.getElementById('migrationLine').textContent=lastMigration?lastMigration.amount+' moved from '+lastMigration.from+' to '+lastMigration.to+'.':'Districts with unmet needs lose citizens to happier places each week.';
+    document.getElementById('nightProduction').textContent=nightProduction;var picked=hearth.filter(function(d){return d.id===shiftSelect.value;})[0],shiftButton=document.getElementById('toggleShift'),on=!!(picked&&nightShifts[picked.id]);shiftButton.disabled=!picked;shiftButton.textContent=on?'End shift':'Start shift';shiftButton.classList.toggle('shift-on',on);document.getElementById('shiftCopy').textContent=picked?(picked.name+' is at '+picked.happiness+'% happiness'+(on?' while producing '+picked.nightOutput+' extra goods each week.':'. Night work costs 12 happiness.')):'Settle a Hearth district before scheduling night work.';
   }
   function updateUI(){
-    var s=stats(), sea=seasons[seasonIndex]; document.getElementById('score0').textContent=s.score[0];document.getElementById('score1').textContent=s.score[1];document.getElementById('sharedEffort').textContent=s.sharedEffort;
+    var s=stats(), sea=seasons[seasonIndex]; renderPulse=s.community; document.getElementById('score0').textContent=s.score[0];document.getElementById('score1').textContent=s.score[1];document.getElementById('sharedEffort').textContent=s.sharedEffort;
     document.getElementById('turnLabel').textContent=cpuThinking?'HARBOR IS THINKING…':name(turn).toUpperCase()+' BUILDS'; document.getElementById('pass').disabled=turn!==0||cpuThinking; document.getElementById('season').textContent=sea.name;
     document.getElementById('weather').textContent=sea.weather+' · growth +'+sea.growth; document.getElementById('year').textContent='YEAR '+year;
     var freightTurns=6-(moves%6);document.getElementById('trainClock').textContent='WEEK '+(trainRuns+1)+' · TRAIN IN '+freightTurns;
@@ -841,7 +1026,7 @@
     document.getElementById('artStudios').textContent=s.neighborhood.counts.art;document.getElementById('yogaStudios').textContent=s.neighborhood.counts.yoga;document.getElementById('lawyers').textContent=s.neighborhood.counts.lawyer;document.getElementById('botanicas').textContent=s.neighborhood.counts.botanica;document.getElementById('cultureImpact').textContent='+'+s.neighborhood.impact;document.getElementById('quakeClock').textContent=(3-(s.trainRuns%3))+' wk';document.getElementById('quakePenalty').textContent=s.earthquake.damageByPlayer[0]+s.earthquake.damageByPlayer[1]?'−'+(s.earthquake.damageByPlayer[0]+s.earthquake.damageByPlayer[1]):'0';document.getElementById('quakeHits').textContent=s.earthquake.hits;
     document.getElementById('humanSignal').textContent=humanSignal;document.getElementById('cpuSignal').textContent=cpuSignal;
     var tr=document.getElementById('seasonTrack');tr.innerHTML='';var phase=moves%6;for(var i=0;i<6;i++){var el=document.createElement('i');if(i<phase)el.className='on';tr.appendChild(el);}
-    var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});updateAudioUI();
+    var ul=document.getElementById('log');ul.innerHTML='';log.slice(0,6).forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});updateDistrictUI(s);updateAudioUI();
   }
   function addLog(t){log.unshift(t);if(log.length>20)log.pop();}
   function say(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(say.timer);say.timer=setTimeout(function(){el.classList.remove('show');},1500);}
@@ -858,8 +1043,8 @@
   function rng(n){var x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x);}
   function drawSky(sea){
     var g=ctx.createLinearGradient(0,0,0,350);g.addColorStop(0,sea.sky[0]);g.addColorStop(1,sea.sky[1]);ctx.fillStyle=g;ctx.fillRect(0,0,720,540);
-    var night=(moves%18)/18, dusk=Math.max(0,Math.sin((night-.55)*Math.PI*2)); if(dusk>.05){ctx.fillStyle='rgba(18,25,55,'+(dusk*.36)+')';ctx.fillRect(0,0,720,330);}
-    var sx=80+((moves%18)/18)*570, sy=65+Math.sin((moves%18)/18*Math.PI)*-28; rect(sx-5,sy-5,11,11,seasonIndex===3?'#eef3ef':'#ffe18a');rect(sx-7,sy-2,15,5,seasonIndex===3?'#eef3ef':'#ffe18a');
+    if(nightAmount>.05){ctx.fillStyle='rgba(9,17,43,'+(nightAmount*.72)+')';ctx.fillRect(0,0,720,330);for(var st=0;st<34;st++){var starX=(st*83+37)%710,starY=18+(st*47)%190,twinkle=.38+.35*Math.sin(tick*.025+st);rect(starX,starY,st%7===0?2:1,st%7===0?2:1,'rgba(246,238,188,'+(nightAmount*twinkle)+')');}}
+    var solar=Math.max(0,Math.sin(dayPhase*Math.PI*2)),sx=58+dayPhase*604,sy=164-solar*126;if(nightAmount<.7){rect(sx-5,sy-5,11,11,seasonIndex===3?'#eef3ef':'#ffe18a');rect(sx-7,sy-2,15,5,seasonIndex===3?'#eef3ef':'#ffe18a');}else{var mx=662-dayPhase*604,my=82-Math.max(0,Math.sin((dayPhase+.5)*Math.PI*2))*36;ctx.fillStyle='#e6eddc';ctx.beginPath();ctx.arc(mx,my,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#20304b';ctx.beginPath();ctx.arc(mx+3,my-2,6,0,Math.PI*2);ctx.fill();}
     poly([[0,224],[82,140],[142,190],[214,126],[292,213],[370,155],[462,215],[535,137],[640,201],[720,168],[720,330],[0,330]],seasonIndex===3?'#728985':'#587b62');
     poly([[0,253],[106,197],[170,234],[262,180],[345,250],[461,192],[566,250],[645,205],[720,239],[720,350],[0,350]],seasonIndex===2?'#74634b':'#41665e');
     for(var i=0;i<18;i++){var bx=(i*47+23)%720, by=252+(i%4)*8, bh=12+(i%5)*5;rect(bx,by-bh,17,bh,'#324d4b');rect(bx+4,by-bh+4,3,3,'#dfbd65');}
@@ -952,9 +1137,10 @@
     ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y-h+w/2,w/2,Math.PI,0);ctx.lineTo(x+w/2,y);ctx.lineTo(x-w/2,y);ctx.closePath();ctx.fill();if(trim){ctx.strokeStyle=trim;ctx.lineWidth=.5;ctx.stroke();}
   }
   function buildingPalette(player){
+    var glass=nightAmount>.38?'#efc56d':player===0?'#315e68':'#237983';
     return player===0?
-      {wall:'#d8a56f',wallLight:'#f0c68d',wallDark:'#965c43',roof:'#a34330',roofLight:'#d16a48',trim:'#f5dfae',glass:'#315e68',accent:'#bb4b34',wood:'#574036',green:'#3f704d',stone:'#bd9c70'}:
-      {wall:'#e7cfaa',wallLight:'#f8e7c8',wallDark:'#aa7958',roof:'#c68a50',roofLight:'#e0b06d',trim:'#fff1d2',glass:'#237983',accent:'#248486',wood:'#64483a',green:'#438067',stone:'#d1b98e'};
+      {wall:'#d8a56f',wallLight:'#f0c68d',wallDark:'#965c43',roof:'#a34330',roofLight:'#d16a48',trim:'#f5dfae',glass:glass,accent:'#bb4b34',wood:'#574036',green:'#3f704d',stone:'#bd9c70'}:
+      {wall:'#e7cfaa',wallLight:'#f8e7c8',wallDark:'#aa7958',roof:'#c68a50',roofLight:'#e0b06d',trim:'#fff1d2',glass:glass,accent:'#248486',wood:'#64483a',green:'#438067',stone:'#d1b98e'};
   }
   function isoShape(x,y,w,d,h){
     var f=[x,y],l=[x-w/2,y-d/2],r=[x+w/2,y-d/2],b=[x,y-d],up=function(p){return[p[0],p[1]-h];};
@@ -1080,6 +1266,7 @@
   function drawMarketBuilding(x,y,v){
     var p=buildingPalette(v.player),hearth=v.player===0;isoShadow(x,y,38,18,11);for(var i=0;i<3;i++){var sx=x+(i-1)*12,sy=y-Math.abs(i-1)*3;isoMass(sx,sy,12,6,7,{left:'#81593c',right:'#a66e43',top:'#d4b169',edge:'#54392e'});var c=i%2?p.trim:p.accent;isoHipRoof(sx,sy,15,8,7,4,c,hearth?p.roofLight:'#d6a44e','#5f4234');isoDoor(sx,sy,12,6,'right',.5,7,4,i===0?'#6f944e':i===1?'#d38448':'#8b679a','#ead38e');}
     isoMass(x,y-14,5,2.5,12,{left:p.wallDark,right:p.wall,top:p.trim,edge:'#594137'});if(hearth)isoHipRoof(x,y-14,7,4,12,3,p.roof,p.roofLight,'#594137');else isoCrenels(x,y-14,5,2.5,12,p);
+    if(nightAmount>.25){detailLine(x-23,y-15,x+23,y-15,'#72553b',1);[-18,-9,0,9,18].forEach(function(dx){rect(x+dx-1,y-16,3,4,'#ffd36f');});}
   }
   function drawAgencyBuilding(x,y,v){
     var p=buildingPalette(v.player),hearth=v.player===0,w=27,d=13,h=25;isoShadow(x,y,w,d,h);isoMass(x,y,w,d,h,{left:p.wallDark,right:p.wall,top:p.wallLight,edge:'#58463c'});isoTrimBand(x,y,w,d,h-2,hearth?p.trim:p.accent);isoTrimBand(x,y,w,d,5,p.stone);
@@ -1210,9 +1397,20 @@
       poly([[-11,-5],[10,-4],[14,0],[10,5],[-11,5],[-15,0]],'#684a32','#2d3330');poly([[-9,-3],[9,-2],[11,0],[9,3],[-9,3]],accent,'#f0d18a');rect(-6,-7,6,5,'#b8753d');rect(1,-7,6,5,'#d5a04d');rect(-5,-8,4,1,'#f4d583');rect(2,-8,4,1,'#f4d583');detailLine(8,-4,8,-14,'#493a30',1.5);poly([[8,-14],[14,-11],[8,-8]],accent,'#493a30');ctx.restore();
     });
   }
+  function drawFestivalMarker(x,y,key){
+    var festival=festivalCells[key];if(!festival||festival.until<=moves)return;var accent=festival.player===0?'#f19a51':'#6fc7c1';detailLine(x-14,y-18,x+14,y-18,'#5b4234',1);[-11,-5,1,7].forEach(function(dx,i){poly([[x+dx,y-18],[x+dx+5,y-17],[x+dx+2,y-13]],i%2?accent:'#f2ce6e','#5b4234');});rect(x-17,y-7,2,9,'#594236');rect(x+15,y-7,2,9,'#594236');
+  }
+  function drawNightPass(pulse){
+    if(nightAmount<.04)return;ctx.fillStyle='rgba(5,12,28,'+(nightAmount*.46)+')';ctx.fillRect(0,0,720,540);var glow='rgba(255,210,105,'+(nightAmount*.96)+')',shiftCells={};pulse.districts.forEach(function(d){if(!d.nightShift)return;d.cells.forEach(function(c){shiftCells[c[0]+','+c[1]]=1;});});
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){var v=board[y][x];if(!v)continue;var p=iso(x,y),key=x+','+y,foodSite=pulse.food.map[key],fest=festivalCells[key];if((x+y+v.seed)%3!==0||shiftCells[key]){rect(p.x-5,p.y-10,3,3,glow);rect(p.x+3,p.y-12,3,3,glow);}if(foodSite==='market'){[-10,-3,4,11].forEach(function(dx){rect(p.x+dx,p.y-17,2,3,'#ffd56f');});}if(fest&&fest.until>moves){[-14,-7,0,7,14].forEach(function(dx,i){rect(p.x+dx,p.y-20+(i%2),2,3,i%2?'#ffb866':'#ffe58b');});}}
+    pulse.waterTrade.routes.slice(0,8).forEach(function(route,index){var path=route.path;if(path.length<2)return;var travel=reduceMotion?(.24+(index*.19)%.55):(tick*.0022+index*.31)%1,span=path.length-1,pos=travel*span,segment=Math.min(span-1,Math.floor(pos)),mix=pos-segment,a=iso(path[segment][0],path[segment][1]),b=iso(path[segment+1][0],path[segment+1][1]);rect(a.x+(b.x-a.x)*mix-2,a.y+(b.y-a.y)*mix-6,5,5,'rgba(255,207,92,'+(nightAmount*.9)+')');});
+  }
+  function updateDayClock(now){
+    if(now-lastClockPaint<500)return;lastClockPaint=now;var total=Math.floor(dayPhase*24*60),hour=Math.floor(total/60)%24,minute=Math.floor((total%60)/10)*10,label=hour<6?'NIGHT':hour<9?'DAWN':hour<18?'DAY':hour<21?'DUSK':'NIGHT';document.getElementById('dayClock').textContent=label+' · '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+  }
   function drawBoard(sea){
     drawIsland(sea); drawRailway(); drawRoads();
-    var pulse=communityData(),places=pulse.places,civic=pulse.civic,food=pulse.food,rare=pulse.rare,neighborhood=pulse.neighborhood,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
+    var pulse=renderPulse||communityData(),places=pulse.places,civic=pulse.civic,food=pulse.food,rare=pulse.rare,neighborhood=pulse.neighborhood,items=[]; for(var y=0;y<N;y++)for(var x=0;x<N;x++)items.push({x:x,y:y,p:iso(x,y)});
     items.sort(function(a,b){return a.p.y-b.p.y;});
     items.forEach(function(it){var v=board[it.y][it.x],p=it.p,land=terrain[it.y][it.x],place=places.map[it.x+','+it.y],service=civic.map[it.x+','+it.y],foodSite=food.map[it.x+','+it.y],rareSite=rare.map[it.x+','+it.y],neighborhoodSite=neighborhood.map[it.x+','+it.y];if(v){
       if(reviewMode&&reviewArt[it.x+','+it.y]){drawReviewBuilding(reviewArt[it.x+','+it.y],p.x,p.y+3,v);drawEarthquakeDamage(p.x,p.y+4,it.x,it.y);return;}
@@ -1237,7 +1435,7 @@
       if(!landmark&&!homestead&&isShop(v))drawShopfront(p.x,p.y+3,v);
       if(!service&&!rareSite&&!neighborhoodSite&&land==='field'&&foodSite!=='market')drawFarm(p.x,p.y,v);
       if(!service&&!rareSite&&!neighborhoodSite&&land==='pasture'&&foodSite!=='market')drawHerd(p.x,p.y,v);
-      drawEarthquakeDamage(p.x,p.y+4,it.x,it.y);
+      drawEarthquakeDamage(p.x,p.y+4,it.x,it.y);drawFestivalMarker(p.x,p.y,it.x+','+it.y);
     } else {
       var near=neighbors(it.x,it.y).some(function(n){return !!board[n[1]][n[0]];}); if(near&&rng(valleySeed+it.x*20+it.y*7+seasonIndex)>.68){var col=seasonIndex===3?'#e8eee7':seasonIndex===2?'#c2753c':'#d7cf69';rect(p.x-1,p.y-4,2,4,col);}
     }});
@@ -1250,7 +1448,46 @@
     else if(seasonIndex===3){if(particles.length<65)for(var j=0;j<3;j++)particles.push({x:rng(tick+j)*720,y:-5-rng(tick+j+8)*60,s:1+rng(tick+j+2)*2});ctx.fillStyle='rgba(245,248,239,.82)';particles.forEach(function(p){p.x+=Math.sin((p.y+tick)/20)*.5;p.y+=p.s*.5;rect(p.x,p.y,p.s+1,p.s+1,ctx.fillStyle);});particles=particles.filter(function(p){return p.y<540;});}
     else {if(particles.length<35)for(var k=0;k<2;k++)particles.push({x:-10,y:170+rng(tick+k)*250,s:1+rng(tick+k+12)*2});particles.forEach(function(p){p.x+=p.s*1.4;p.y+=Math.sin((p.x+tick)/24)*.25;rect(p.x,p.y,3,2,'rgba(215,127,59,.7)');});particles=particles.filter(function(p){return p.x<730;});}
   }
-  function render(now){var dt=Math.min(3,(now-lastTime)/16.67);lastTime=now;worldAngle=reduceMotion?0:(now%96000)/96000*Math.PI*2;var sea=seasons[seasonIndex];ctx.beginFrame();drawSky(sea);drawBoard(sea);drawWeather(sea,dt);ctx.endFrame();requestAnimationFrame(render);}
+  function render(now){if(now-lastFrameAt<32){requestAnimationFrame(render);return;}lastFrameAt=now;var dt=Math.min(3,(now-lastTime)/16.67);lastTime=now;dayPhase=reduceMotion?.32:(now%96000)/96000;var sun=Math.sin(dayPhase*Math.PI*2);nightAmount=reduceMotion?0:Math.max(0,Math.min(1,(-sun+.08)/.72));worldAngle=reduceMotion?0:(now%96000)/96000*Math.PI*2;var sea=seasons[seasonIndex];ctx.beginFrame();drawSky(sea);drawBoard(sea);drawWeather(sea,dt);drawNightPass(renderPulse||communityData());ctx.endFrame();updateDayClock(now);requestAnimationFrame(render);}
+  function setupViewportUI(){
+    var viewport=document.querySelector('.viewport'),aside=document.querySelector('aside'),scorebar=document.querySelector('.hud'),actions=document.querySelector('.actions');
+    aside.id='gameHud';aside.classList.add('closed');aside.inert=true;viewport.appendChild(aside);
+    actions.classList.add('quick-controls');viewport.appendChild(actions);
+    var tabs=document.createElement('nav');tabs.className='hud-tabs';tabs.setAttribute('aria-label','Valley HUD sections');
+    [['overview','STATUS'],['city','CITY'],['news','NEWS'],['guide','GUIDE']].forEach(function(item,i){var b=document.createElement('button');b.type='button';b.textContent=item[1];b.dataset.pane=item[0];if(i===0)b.className='active';tabs.appendChild(b);});aside.insertBefore(tabs,aside.firstChild);aside.insertBefore(scorebar,tabs.nextSibling);
+    var panels=Array.prototype.slice.call(aside.querySelectorAll(':scope > .panel'));
+    panels.forEach(function(panel,i){panel.dataset.pane=i<=1||i===9?'overview':i>=2&&i<=8?'city':i===10||i===13?'news':'guide';if(panel.dataset.pane==='overview')panel.classList.add('active');});
+    function selectPane(name){aside.querySelectorAll(':scope > .panel').forEach(function(panel){panel.classList.toggle('active',panel.dataset.pane===name);});tabs.querySelectorAll('button').forEach(function(button){button.classList.toggle('active',button.dataset.pane===name);});if(name==='guide'){document.getElementById('rules').classList.add('open');document.getElementById('rulesToggle').setAttribute('aria-expanded','true');document.getElementById('rulesToggle').textContent='How the valley grows −';}}
+    tabs.addEventListener('click',function(e){var button=e.target.closest('button');if(button)selectPane(button.dataset.pane);});
+    document.getElementById('hudToggle').addEventListener('click',function(){var open=aside.classList.contains('closed');aside.classList.toggle('closed',!open);aside.inert=!open;this.setAttribute('aria-expanded',String(open));this.textContent=open?'Close HUD':'Open HUD';});
+  }
+  function renderAttract(page){
+    attractPage=page;var kicker=document.getElementById('attractKicker'),title=document.getElementById('attractTitle'),copy=document.getElementById('attractCopy'),primary=document.getElementById('attractPrimary'),secondary=document.getElementById('attractSecondary');
+    var pages=[
+      {k:'A cooperative city game',t:'GO <span>×</span> CITY',c:'Two mayors. One living valley. Build slowly, follow the water, and let neighborhoods grow into places worth sharing.',p:'How to play',s:'Begin new valley'},
+      {k:'Field guide · 1 of 1',t:'READ THE <span>VALLEY</span>',c:'Tap an open plot to settle it. Connected homes make streets; water, farms, culture, and breathing room raise wellbeing. Every six turns the season changes—and the train arrives.',p:'Continue',s:'Back'},
+      {k:'New game',t:'A FRESH <span>VALLEY</span>',c:'Lead Hearth while Harbor plans in private. Your scores combine: care for the shared valley, avoid rushed clusters, and leave every district an open path.',p:'Begin new valley',s:gameMode==='menu'?'Return to valley':'Watch demo'}
+    ],data=pages[page];kicker.textContent=data.k;title.innerHTML=data.t;copy.textContent=data.c;primary.textContent=data.p;secondary.textContent=data.s;
+    document.querySelectorAll('#attractDots i').forEach(function(dot,i){dot.classList.toggle('on',i===page);});
+  }
+  function showAttract(page,fromGame){
+    if(fromGame){gameMode='menu';clearTimeout(cpuTimer);cpuThinking=false;}
+    document.getElementById('attractScreen').classList.remove('hidden');document.getElementById('demoTag').classList.toggle('hidden',gameMode!=='demo');renderAttract(page);
+  }
+  function beginGame(){
+    clearInterval(demoTimer);clearInterval(attractTimer);gameMode='play';document.getElementById('attractScreen').classList.add('hidden');document.getElementById('demoTag').classList.add('hidden');reset();canvas.focus();say('Hearth is ready. Choose an open plot.');
+  }
+  function demoStep(){
+    if(gameMode!=='demo')return;if(moves>=10){reset();return;}
+    var p=moves%2,candidates=[];
+    for(var y=3;y<N-3;y++)for(var x=3;x<N-3;x++)if(!board[y][x]){var d=Math.abs(x-10)+Math.abs(y-10),near=friendlyWithin(x,y,p,2).length,other=friendlyWithin(x,y,1-p,1).length;candidates.push({x:x,y:y,score:near*8+other*2-d*.35+rng(valleySeed+x*37+y*71+moves)*5});}
+    candidates.sort(function(a,b){return b.score-a.score;});for(var i=0;i<Math.min(60,candidates.length);i++){var c=candidates[i],result=makeMove(c.x,c.y,p);if(result.ok){finishMove(c.x,c.y,p,result.taken);break;}}
+  }
+  function startIdleLoop(){
+    gameMode='demo';renderAttract(0);demoTimer=setInterval(demoStep,1250);attractTimer=setInterval(function(){if(gameMode==='demo')renderAttract((attractPage+1)%3);},7000);
+    document.getElementById('attractPrimary').addEventListener('click',function(){clearInterval(attractTimer);if(attractPage<2)renderAttract(attractPage+1);else beginGame();});
+    document.getElementById('attractSecondary').addEventListener('click',function(){clearInterval(attractTimer);if(attractPage===0)beginGame();else if(attractPage===1)renderAttract(0);else if(gameMode==='menu'){gameMode='play';document.getElementById('attractScreen').classList.add('hidden');canvas.focus();}else renderAttract(0);});
+  }
   function pointInTile(px,py,corners){
     var sign=0;for(var i=0;i<4;i++){var a=corners[i],b=corners[(i+1)%4],cross=(b.x-a.x)*(py-a.y)-(b.y-a.y)*(px-a.x);if(Math.abs(cross)<.01)continue;var next=cross>0?1:-1;if(sign&&next!==sign)return false;sign=next;}return true;
   }
@@ -1263,12 +1500,16 @@
   canvas.addEventListener('pointerdown',function(e){var c=eventCell(e);if(c.x>=0&&c.x<N&&c.y>=0&&c.y<N){cursor=c;humanPlace(c.x,c.y);}});
   canvas.addEventListener('keydown',function(e){var used=true;if(e.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-1);else if(e.key==='ArrowRight')cursor.x=Math.min(N-1,cursor.x+1);else if(e.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-1);else if(e.key==='ArrowDown')cursor.y=Math.min(N-1,cursor.y+1);else if(e.key==='Enter'||e.key===' ')humanPlace(cursor.x,cursor.y);else used=false;if(used)e.preventDefault();});
   document.getElementById('pass').addEventListener('click',humanPass);
-  document.getElementById('newGame').addEventListener('click',function(){startAudio();reset();say('The terrain reshapes into a fresh valley.');});
+  document.getElementById('newGame').addEventListener('click',function(){showAttract(2,true);});
+  document.getElementById('hostFestival').addEventListener('click',function(){if(gameMode==='play')hostFestival(0,document.getElementById('festivalDistrict').value);});
+  document.getElementById('festivalDistrict').addEventListener('change',function(){updateUI();});
+  document.getElementById('shiftDistrict').addEventListener('change',function(){updateUI();});
+  document.getElementById('toggleShift').addEventListener('click',function(){if(gameMode!=='play')return;var id=document.getElementById('shiftDistrict').value;if(!id)return;if(nightShifts[id]){delete nightShifts[id];addLog('Hearth ended the night shift.');say('Night shift ended');}else{nightShifts[id]=1;addLog('Hearth started a night shift: extra trade, −12 happiness.');say('Night shift started');}updateUI();});
   document.getElementById('soundToggle').addEventListener('click',toggleSound);
   document.getElementById('musicToggle').addEventListener('click',function(){startAudio();toggleMusic();});
   document.getElementById('rulesToggle').addEventListener('click',function(){var box=document.getElementById('rules'),open=!box.classList.contains('open');box.classList.toggle('open',open);this.setAttribute('aria-expanded',String(open));this.textContent='How the valley grows '+(open?'−':'+');});
   document.addEventListener('keydown',function(e){if(e.altKey&&e.shiftKey&&e.key.toLowerCase()==='a'){reviewMode=true;reviewArt={};reset();e.preventDefault();}});
-  reset();requestAnimationFrame(render);
+  setupViewportUI();reset();startIdleLoop();requestAnimationFrame(render);
 })();
 </script>
 </body>
